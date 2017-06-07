@@ -1,7 +1,7 @@
 #ifndef ASMVM_OP_H
 #define ASMVM_OP_H
 
-#include "asmvm.h"
+#include "params.h"
 
 namespace asmvm {
 

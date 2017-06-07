@@ -9,7 +9,7 @@ asmvm_lex.o: asmvm_lex.cpp
 asmvm_parser.o: asmvm_parser.cpp
 	g++ -std=gnu++11 -g -c asmvm_parser.cpp
 	
-op.o: op.cpp op.h
+op.o: op.cpp params.h op.h
 	g++ -std=gnu++11 -g -c op.cpp
 
 asmvm.o: asmvm.cpp asmvm.h
