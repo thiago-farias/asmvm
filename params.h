@@ -36,7 +36,7 @@ class Address {
   Source* offset() { return offset_; }
   const Source* offset() const { return offset_; }
  private:
-  Base* base_;
+  BaseAddress* base_;
   Source* offset_;
 };
 
@@ -77,7 +77,7 @@ class RegisterSource : public Source {
   uint32_t rindex_;
 };
 
-class BaseAddressRegister : public Base {
+class BaseAddressRegister : public BaseAddress {
  public:
   explicit BaseAddressRegister(uint32_t rindex) : rindex_(rindex) {}
   uint32_t base_address(AsmMachine& vm) const { return uint32_t(vm.get_register(rindex_)); }
