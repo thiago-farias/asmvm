@@ -58,18 +58,36 @@ int yyerror(const char *msg)
 %token R_BRACKET
 %token COMMA
 %token ASSIGN
-%token SEMICOLON
+%token LF
 
 %type <rindex> REGISTER
 %type <int_value> L_INT
 %type <int_value> L_HEX
 %type <str> L_STRING
 %type <str> IDENTIFIER
+%type <value> Value
+%type <value> IntValue
+%type <instruction> Instruction
+%type <instruction> Load
+%type <instruction> Store
+%type <instruction> Pop
+%type <instruction> Print
+%type <instruction> TernaryRegInstructions
+%type <source_list> SourceList
+%type <base> Base
+%type <Source> Source
+%type <address> Address
 
 %union {
 	char *str;
   uint32_t rindex;
   int32_t int_value;
+  Value* value;
+  Instruction* instruction;
+  std::list<Source*> source_list;
+  Base* base;
+  Source* source;
+  Address* address;
 }
 %%
 
@@ -89,7 +107,7 @@ Assignments:
   ;
 
 Assignment: 
-  IDENTIFIER ASSIGN Value SEMICOLON
+  IDENTIFIER ASSIGN Value LF
   ;
 
 CodeSection: 
@@ -102,8 +120,8 @@ Lines:
   ;
 
 Line: 
-  Instruction SEMICOLON
-  | IDENTIFIER COMMA Instruction SEMICOLON
+  Instruction LF
+  | IDENTIFIER COMMA Instruction LF
   ;
 
 Value: 
