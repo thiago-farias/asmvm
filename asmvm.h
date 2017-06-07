@@ -158,9 +158,16 @@ class AsmMachine {
     add_instruction(instruction);
   }
   
-  int32_t register_set(uint32_t rindex) const {
+  int32_t get_register(uint32_t rindex) const {
     return register_set_[rindex];
   }
+  
+  void set_register(uint32_t rindex, int32_t value) {
+    register_set_[rindex] = value;
+  }
+  
+  uint32_t reg_PC() { return reg_PC_; }
+  uint32_t reg_ST() { return reg_ST_; }
   
   void Run();
   
@@ -172,15 +179,16 @@ class AsmMachine {
   uint8_t data_memory_[kDefaultMemorySize];
   std::vector<Instruction*> program_;
   int32_t register_set_[8];
-  int32_t reg_PC_;
-  int32_t reg_ST_;
-  std::vector<int32_t> call_stack_;
+  // These special purpose registers are unsigned.
+  uint32_t reg_PC_;
+  uint32_t reg_ST_;
+  std::vector<uint32_t> call_stack_;
 };
 
 class RegisterSource : public Source {
  public:
   explicit RegisterSource(uint32_t rindex) : rindex_(rindex) {}
-  int32_t value(AsmMachine& vm) const { return vm.register_set(rindex_); }
+  int32_t value(AsmMachine& vm) const { return vm.get_register(rindex_); }
  private:
   uint32_t rindex_;
 };
@@ -188,7 +196,7 @@ class RegisterSource : public Source {
 class RegisterBase : public Base {
  public:
   explicit RegisterBase(uint32_t rindex) : rindex_(rindex) {}
-  uint32_t base_address(AsmMachine& vm) const { return uint32_t(vm.register_set(rindex_)); }
+  uint32_t base_address(AsmMachine& vm) const { return uint32_t(vm.get_register(rindex_)); }
  private:
   uint32_t rindex_;
 };

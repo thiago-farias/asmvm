@@ -28,7 +28,9 @@ void AsmMachine::reset_registers() {
 void AsmMachine::Run() {
   reset_registers();
   Instruction *ins = program_[reg_PC_];
-  while ((reg_PC_ = ins->Exec(*this)) >= 0) {
+  int32_t temp_PC;
+  while ((temp_PC = ins->Exec(*this)) >= 0) {
+    reg_PC_ = uint32_t(temp_PC);
     ins = program_[reg_PC_];
   }
   if (!call_stack_.empty()) {
@@ -38,6 +40,8 @@ void AsmMachine::Run() {
 }
 
 } // namespace asmvm
+
+
 
 int main(int argc, char **argv) {
 	extern FILE *yyin;

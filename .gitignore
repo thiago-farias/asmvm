@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# Arquivos de configuração
+.vscode
+
+# Arquivos intermediarios
+asmvm_parser.*
+asmvm_lex.cpp

@@ -72,7 +72,7 @@ int yyerror(const char *msg)
 %type <instruction> Store
 %type <instruction> Pop
 %type <instruction> Print
-%type <instruction> TernaryRegInstructions
+%type <instruction> TernaryInstructions
 %type <source_list> SourceList
 %type <base> Base
 %type <Source> Source
@@ -135,7 +135,7 @@ IntValue:
   ;
 
 Instruction: 
-  TernaryRegInstructions
+  TernaryInstructions
   | NOT REGISTER REGISTER
   | INC REGISTER
   | DEC REGISTER
@@ -164,7 +164,7 @@ SourceList:
   | Source SourceList
   ;
   
-TernaryRegInstructions:
+TernaryInstructions:
   ADD Source Source REGISTER
   | SUB Source Source REGISTER
   | MUL Source Source REGISTER

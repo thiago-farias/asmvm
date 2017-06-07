@@ -1,6 +1,6 @@
 all: asmvm
 
-asmvm: asmvm.o asmvm_lex.o asmvm_parser.o
+asmvm: asmvm.o op.o asmvm_lex.o asmvm_parser.o
 	g++ -std=gnu++11 -g *.o -o asmvm
 
 asmvm_lex.o: asmvm_lex.cpp
@@ -9,6 +9,9 @@ asmvm_lex.o: asmvm_lex.cpp
 asmvm_parser.o: asmvm_parser.cpp
 	g++ -std=gnu++11 -g -c asmvm_parser.cpp
 	
+op.o: op.cpp op.h
+	g++ -std=gnu++11 -g -c op.cpp
+
 asmvm.o: asmvm.cpp asmvm.h
 	g++ -std=gnu++11 -g -c asmvm.cpp
 
