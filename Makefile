@@ -1,31 +1,31 @@
-all: gen
+all: asmvm
 
-gen: gen_framework.o gen_lex.o gen_parser.o
-	g++ -std=gnu++11 -g *.o -o gen
+asmvm: asmvm.o asmvm_lex.o asmvm_parser.o
+	g++ -std=gnu++11 -g *.o -o asmvm
 
-gen_lex.o: gen_lex.cpp
-	g++ -std=gnu++11 -g -c gen_lex.cpp
+asmvm_lex.o: asmvm_lex.cpp
+	g++ -std=gnu++11 -g -c asmvm_lex.cpp
 	
-gen_parser.o: gen_parser.cpp
-	g++ -std=gnu++11 -g -c gen_parser.cpp
+asmvm_parser.o: asmvm_parser.cpp
+	g++ -std=gnu++11 -g -c asmvm_parser.cpp
 	
-gen_framework.o: gen_framework.cpp gen_framework.h
-	g++ -std=gnu++11 -g -c gen_framework.cpp
+asmvm.o: asmvm.cpp asmvm.h
+	g++ -std=gnu++11 -g -c asmvm.cpp
 
-gen_lex.cpp: gen.l gen_parser.cpp
-	flex -ogen_lex.cpp gen.l
+asmvm_lex.cpp: asmvm.l asmvm_parser.cpp
+	flex -oasmvm_lex.cpp gen.l
 
-gen_parser.cpp: gen.y
-	bison -d -o gen_parser.cpp gen.y
+asmvm_parser.cpp: asmvm.y
+	bison -v -d -o asmvm_parser.cpp asmvm.y
 	
 
 clean: 
 	rm -f *.o
-	rm -f gen_lex.cpp
-	rm -f gen_parser.*
-	rm -f gen
+	rm -f asmvm_lex.cpp
+	rm -f asmvm_parser.*
+	rm -f asmvm
 
-install: gen
-	cp gen /usr/local/bin
+install: asmvm
+	cp asmvm /usr/local/bin
 	
 
