@@ -1,4 +1,5 @@
 #include "asmvm.h"
+#include "params.h"
 
 extern int yyparse();
 
@@ -15,6 +16,11 @@ AsmMachine::~AsmMachine() {
   for (int i=0; i < program_.size(); ++i) {
     delete program_[i];
   }
+}
+
+void AsmMachine::add_labeled_instruction(const std::string& label, Instruction* instruction) {
+  add_symbol(label, new IntegerValue(program_.size()));
+  add_instruction(instruction);
 }
 
 void AsmMachine::reset_registers() {

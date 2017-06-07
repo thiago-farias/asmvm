@@ -11,16 +11,16 @@ class Source {
   virtual int32_t value(AsmMachine& vm) const = 0;
 };
 
-class Base {
+class BaseAddress {
  public:
-  virtual ~Base() {}
+  virtual ~BaseAddress() {}
   virtual uint32_t base_address(AsmMachine& vm) const = 0;
 };
 
 class Address {
  public:
-  explicit Address(Base* base) : base_(base), offset_(NULL) {}
-  Address(Base* base, Source* offset) : base_(base), offset_(offset) {}
+  explicit Address(BaseAddress* base) : base_(base), offset_(NULL) {}
+  Address(BaseAddress* base, Source* offset) : base_(base), offset_(offset) {}
   Address(const Address& address) : base_(address.base_), offset_(address.offset_) {}
   ~Address() {
     delete base_;
@@ -31,8 +31,8 @@ class Address {
     offset_ = address.offset_;
     return *this;
   }
-  Base* base() { return base_; }
-  const Base* base() const { return base_; }
+  BaseAddress* base() { return base_; }
+  const BaseAddress* base() const { return base_; }
   Source* offset() { return offset_; }
   const Source* offset() const { return offset_; }
  private:
@@ -77,17 +77,17 @@ class RegisterSource : public Source {
   uint32_t rindex_;
 };
 
-class RegisterBase : public Base {
+class BaseAddressRegister : public Base {
  public:
-  explicit RegisterBase(uint32_t rindex) : rindex_(rindex) {}
+  explicit BaseAddressRegister(uint32_t rindex) : rindex_(rindex) {}
   uint32_t base_address(AsmMachine& vm) const { return uint32_t(vm.get_register(rindex_)); }
  private:
   uint32_t rindex_;
 };
 
-class HexBase : public Base {
+class BaseAddressHex : public BaseAddress {
  public:
-  explicit HexBase(uint32_t hex) : hex_(hex) {}
+  explicit BaseAddressHex(uint32_t hex) : hex_(hex) {}
   uint32_t base_address(AsmMachine& vm) const { return hex_; }
  private:
   uint32_t hex_;
