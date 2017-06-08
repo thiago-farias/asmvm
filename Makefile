@@ -16,7 +16,7 @@ asmvm.o: asmvm.cpp asmvm.h
 	g++ -std=gnu++11 -g -c asmvm.cpp
 
 asmvm_lex.cpp: asmvm.l asmvm_parser.cpp
-	flex -oasmvm_lex.cpp gen.l
+	flex -oasmvm_lex.cpp asmvm.l
 
 asmvm_parser.cpp: asmvm.y
 	bison -v -d -o asmvm_parser.cpp asmvm.y

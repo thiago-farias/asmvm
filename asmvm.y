@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <iostream>
-#include "vm.h"
+#include <list>
+#include "asmvm.h"
+#include "params.h"
 extern int yylex();
 
 extern int lineNumber;
@@ -56,7 +58,7 @@ int yyerror(const char *msg)
 %token CODE
 %token L_BRACKET
 %token R_BRACKET
-%token COMMA
+%token COLON
 %token ASSIGN
 %token LF
 
@@ -65,29 +67,18 @@ int yyerror(const char *msg)
 %type <int_value> L_HEX
 %type <str> L_STRING
 %type <str> IDENTIFIER
-%type <value> Value
-%type <value> IntValue
-%type <instruction> Instruction
-%type <instruction> Load
-%type <instruction> Store
-%type <instruction> Pop
-%type <instruction> Print
-%type <instruction> TernaryInstructions
-%type <source_list> SourceList
-%type <base> Base
-%type <Source> Source
-%type <address> Address
+
 
 %union {
 	char *str;
   uint32_t rindex;
   int32_t int_value;
-  Value* value;
-  Instruction* instruction;
-  std::list<Source*> source_list;
-  Base* base;
-  Source* source;
-  Address* address;
+  asmvm::Value* value;
+  asmvm::Instruction* instruction;
+  std::list<asmvm::Source*> source_list;
+  asmvm::BaseAddress* base;
+  asmvm::Source* source;
+  asmvm::Address* address;
 }
 %%
 
@@ -121,7 +112,7 @@ Lines:
 
 Line: 
   Instruction LF
-  | IDENTIFIER COMMA Instruction LF
+  | IDENTIFIER COLON Instruction LF
   ;
 
 Value: 
