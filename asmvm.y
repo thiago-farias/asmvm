@@ -30,12 +30,11 @@ int yyerror(const char *msg)
 %token JMP
 %token JZ
 %token JNZ
-%token LD
+%token MV
 %token LD1
 %token LD2
 %token LD3
 %token LD4
-%token ST
 %token ST1
 %token ST2
 %token ST3
@@ -44,6 +43,7 @@ int yyerror(const char *msg)
 %token DEC
 %token CALL
 %token RET
+%token ST
 %token PC
 %token PUSH
 %token POP
@@ -75,7 +75,7 @@ int yyerror(const char *msg)
   int32_t int_value;
   asmvm::Value* value;
   asmvm::Instruction* instruction;
-  std::list<asmvm::Source*> source_list;
+  std::list<asmvm::Source*> *source_list;
   asmvm::BaseAddress* base;
   asmvm::Source* source;
   asmvm::Address* address;
@@ -135,12 +135,17 @@ Instruction:
   | RET
   | JZ REGISTER IDENTIFIER
   | JNZ REGISTER IDENTIFIER
+  | Move
   | PUSH Source
   | Pop
   | Load
   | Store
   | EXIT Source
   | Print
+  ;
+Move:
+  MV REGISTER REGISTER
+  | MV REGISTER L_BRACKET IntValue R_BRACKET
   ;
 Pop:
   POP
@@ -168,8 +173,6 @@ TernaryInstructions:
   | SHL Source Source REGISTER
   ;
 Load:
-  LD REGISTER Address
-  | LD REGISTER L_BRACKET Source R_BRACKET
   | LD1 REGISTER Address
   | LD2 REGISTER Address
   | LD3 REGISTER Address
