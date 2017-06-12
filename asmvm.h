@@ -98,6 +98,18 @@ class AsmMachine {
   
   SymbolTable& symbol_table() { return symbol_table_; }
   const SymbolTable& symbol_table() const { return symbol_table_; }
+  bool GetSymbolValue(const std::string& symbol, Value** out_value);
+
+  void call_push() {
+    call_stack_.push_back(reg_PC_);
+  }
+
+  uint32_t call_pop() {
+    uint32_t last_call = call_stack_.back();
+    call_stack_.pop_back();
+    return last_call;
+  }
+
  private:
   inline void reset_registers();
   SymbolTable symbol_table_;

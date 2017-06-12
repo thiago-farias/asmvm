@@ -94,6 +94,37 @@ class OpShr : public TernaryInstruction {
   int32_t Exec(AsmMachine& vm);
 };
 
+class OpNot : public Instruction {
+ public:
+  OpNot(uint32_t rindex1, uint32_t rindex2) : rindex1_(rindex1), rindex2_(rindex2) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t rindex1_;
+  uint32_t rindex2_;
+};
+
+class OpJmp : public Instruction {
+ public:
+  OpJmp(const std::string& label) : label_(label) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  std::string label_;
+};
+
+class OpCall : public Instruction {
+ public:
+  OpCall(const std::string& label) : label_(label) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  std::string label_;
+};
+
+class OpRet : public Instruction {
+ public:
+  OpRet() {}
+  int32_t Exec(AsmMachine& vm);
+};
+
 } // namespace asmvm
 
 #endif

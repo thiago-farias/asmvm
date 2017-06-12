@@ -45,6 +45,15 @@ void AsmMachine::Run() {
   }
 }
 
+ bool AsmMachine::GetSymbolValue(const std::string& symbol, Value** out_value) {
+    auto itr = symbol_table_.find(symbol);
+    if (itr == symbol_table_.end()) {
+      return false;
+    }
+    *out_value = itr->second;
+    return true;
+  }
+
 } // namespace asmvm
 
 

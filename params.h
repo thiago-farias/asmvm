@@ -42,6 +42,7 @@ class Address {
 
 class StringValue : public Value {
  public:
+  StringValue() {}
   explicit StringValue(const std::string& value) : value_(value) {}
   StringValue(const StringValue& sv) : value_(sv.value_) {}
   StringValue& operator = (const StringValue& sv) {
@@ -56,6 +57,7 @@ class StringValue : public Value {
 
 class IntegerValue : public Value, public Source {
  public:
+  IntegerValue() : value_(0) {}
   explicit IntegerValue(int32_t value) : value_(value) {}
   IntegerValue(const IntegerValue& sv) : value_(sv.value_) {}
   IntegerValue& operator = (const IntegerValue& sv) {
