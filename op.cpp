@@ -86,4 +86,18 @@ int32_t OpRet::Exec(AsmMachine& vm) {
   return vm.call_pop() + 1;
 }
 
+int32_t ConditionalJump::Exec(AsmMachine& vm) {
+  Value* value = NULL;
+  if (jmp_condition(vm) && vm.GetSymbolValue(label_, &value)) {
+    if (value->type() == Value::kValueTypeInteger) {
+      IntegerValue* int_value = static_cast<IntegerValue*>(value);
+      return int_value->value();
+    } else {
+      printf("Ivalid label in instruction [JMP %s]. Aborting...\n", label_.c_str());
+      return -1;
+    }
+  }
+  return vm.reg_PC() + 1;  
+}
+
 } // namespace asmvm

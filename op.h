@@ -125,6 +125,28 @@ class OpRet : public Instruction {
   int32_t Exec(AsmMachine& vm);
 };
 
+class ConditionalJump : public Instruction {
+ public:
+  ConditionalJump(uint32_t rindex, const std::string& label) : rindex_(rindex), label_(label) {}
+  int32_t Exec(AsmMachine& vm);
+  virtual bool jmp_condition(AsmMachine& vm) = 0;
+ protected:
+  uint32_t rindex_;
+  std::string label_;
+};
+
+class OpJz : public ConditionalJump {
+ public:
+  OpJz(uint32_t rindex, const std::string& label) : ConditionalJump(rindex, label) {}
+  bool jmp_condition(AsmMachine& vm) { return vm.get_register(rindex_) == 0; }
+};
+
+class OpJnz : public ConditionalJump {
+ public:
+  OpJnz(uint32_t rindex, const std::string& label) : ConditionalJump(rindex, label) {}
+  bool jmp_condition(AsmMachine& vm) { return vm.get_register(rindex_) != 0; }
+};
+
 } // namespace asmvm
 
 #endif
