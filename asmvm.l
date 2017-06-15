@@ -2,8 +2,10 @@
 #include <string.h>
 #include <sstream>
 #include <list>
+#include "op.h"
 #include "asmvm.h"
 #include "params.h"
+
 #include "asmvm_parser.hpp"
 
 

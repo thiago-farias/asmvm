@@ -147,6 +147,93 @@ class OpJnz : public ConditionalJump {
   bool jmp_condition(AsmMachine& vm) { return vm.get_register(rindex_) != 0; }
 };
 
+class OpMov : public Instruction {
+ public:
+  OpMov(uint32_t rindex_dst, Source* src) : rindex_dst_(rindex_dst), src_(src) {}
+  ~OpMov() {
+    delete src_;
+  }
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t rindex_dst_;
+  Source* src_;
+};
+
+class OpPush : public Instruction {
+ public:
+  OpPush(Source* src) : src_(src) {}
+  ~OpPush() {
+    delete src_;
+  }
+  int32_t Exec(AsmMachine& vm);
+ private:
+  Source* src_;
+};
+
+class OpPop : public Instruction {
+ public:
+  OpPop() : rindex_(0), store_value_(false) {}
+  OpPop(uint32_t rindex) : rindex_(rindex), store_value_(true) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t rindex_;
+  bool store_value_;
+};
+
+class OpLoad : public Instruction {
+ public:
+  OpLoad(uint32_t rindex, Address* address) : rindex_(rindex), address_(address) {}
+  virtual ~OpLoad() {
+    delete address_;
+  }
+  
+ protected:
+  uint32_t rindex_;
+  Address* address_;
+};
+
+class OpLd1 : public OpLoad {
+ public:
+  OpLd1(uint32_t rindex, Address* address) : OpLoad(rindex, address) {}
+  int32_t Exec(AsmMachine& vm);
+};
+
+class OpLd2 : public OpLoad {
+ public:
+  OpLd2(uint32_t rindex, Address* address) : OpLoad(rindex, address) {}
+  int32_t Exec(AsmMachine& vm);
+};
+
+class OpLd4 : public OpLoad {
+ public:
+  OpLd4(uint32_t rindex, Address* address) : OpLoad(rindex, address) {}
+  int32_t Exec(AsmMachine& vm);
+};
+
+class OpExit : public Instruction {
+ public:
+  OpExit(Source* code) : code_(code) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  Source* code_;
+};
+
+class OpInc : public Instruction {
+ public:
+  OpInc(uint32_t rindex) : rindex_(rindex) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t rindex_;
+};
+
+class OpDec : public Instruction {
+ public:
+  OpDec(uint32_t rindex) : rindex_(rindex) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t rindex_;
+};
+
 } // namespace asmvm
 
 #endif

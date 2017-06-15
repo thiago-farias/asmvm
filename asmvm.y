@@ -3,8 +3,10 @@
 #include <stdint.h>
 #include <iostream>
 #include <list>
+#include "op.h"
 #include "asmvm.h"
 #include "params.h"
+
 extern int yylex();
 
 extern int lineNumber;
@@ -65,9 +67,20 @@ int yyerror(const char *msg)
 %type <rindex> REGISTER
 %type <int_value> L_INT
 %type <int_value> L_HEX
+%type <v_int_value> IntValue 
 %type <str> L_STRING
 %type <str> IDENTIFIER
-
+%type <value> Value
+%type <instruction> Instruction
+%type <ternary> TernaryInstructions
+%type <instruction> Move
+%type <instruction> Pop
+%type <instruction> Load
+%type <instruction> Store
+%type <source> Source
+%type <instruction> Print
+%type <base> Base
+%type <address> Address
 
 %union {
 	char *str;
@@ -75,10 +88,12 @@ int yyerror(const char *msg)
   int32_t int_value;
   asmvm::Value* value;
   asmvm::Instruction* instruction;
+  asmvm::TernaryInstruction* ternary;
   std::list<asmvm::Source*> *source_list;
   asmvm::BaseAddress* base;
   asmvm::Source* source;
   asmvm::Address* address;
+  asmvm::IntegerValue* v_int_value;
 }
 %%
 
@@ -116,40 +131,88 @@ Line:
   ;
 
 Value: 
-  L_STRING
-  | IntValue 
+  L_STRING {
+    $$ = new asmvm::StringValue($1);
+  }
+  | IntValue {
+    $$ = new asmvm::IntegerValue($1);
+  }
   ;
 
 IntValue:
-  L_INT
-  | L_HEX 
+  L_INT {
+    $$ = $1;
+  }
+  | L_HEX {
+    $$ = $1;
+  }
   ;
 
 Instruction: 
-  TernaryInstructions
-  | NOT REGISTER REGISTER
-  | INC REGISTER
-  | DEC REGISTER
-  | JMP IDENTIFIER
-  | CALL IDENTIFIER
-  | RET
-  | JZ REGISTER IDENTIFIER
-  | JNZ REGISTER IDENTIFIER
-  | Move
-  | PUSH Source
-  | Pop
-  | Load
-  | Store
-  | EXIT Source
-  | Print
+  TernaryInstructions {
+    $$ = $1;
+  }
+  | NOT REGISTER REGISTER {
+    $$ = new asmvm::OpNot($2, $3);
+  }
+  | INC REGISTER {
+    $$ = new asmvm::OpInc($2);
+  }
+  | DEC REGISTER {
+    $$ = new asmvm::OpDec($2);
+  }
+  | JMP IDENTIFIER {
+    $$ = new asmvm::OpJmp($2);
+  }
+  | CALL IDENTIFIER {
+    $$ = new asmvm::OpCall($2);
+  }
+  | RET {
+    $$ = new asmvm::OpRet();
+  }
+  | JZ REGISTER IDENTIFIER {
+    $$ = new asmvm::OpJz($2, $3);
+  }
+  | JNZ REGISTER IDENTIFIER {
+    $$ = new asmvm::OpJnz($2, $3);
+  }
+  | Move {
+    $$ = $1;
+  }
+  | PUSH Source {
+    $$ = new OpPush($2);
+  }
+  | Pop {
+    $$ = $1;
+  }
+  | Load {
+    $$ = $1;
+  }
+  | Store {
+    $$ = $1;
+  }
+  | EXIT Source {
+    $$ = asmvm::OpExit($2);
+  }
+  | Print {
+    $$ = $1;
+  }
   ;
 Move:
-  MV REGISTER REGISTER
-  | MV REGISTER L_BRACKET IntValue R_BRACKET
+  MV REGISTER REGISTER {
+    $$ = new asmvm::OpMov($2, new asmvm::RegisterSource($3));
+  }
+  | MV REGISTER L_BRACKET IntValue R_BRACKET {
+    $$ = new asmvm::OpMov($2, new asmvm::IntValue($4));
+  }
   ;
 Pop:
-  POP
-  | POP REGISTER
+  POP {
+    $$ = new asmvm::OpPop();
+  }
+  | POP REGISTER {
+    $$ = new asmvm::OpPop($2);
+  }
   ;
 Print:
   PRINT L_STRING
@@ -161,34 +224,71 @@ SourceList:
   ;
   
 TernaryInstructions:
-  ADD Source Source REGISTER
-  | SUB Source Source REGISTER
-  | MUL Source Source REGISTER
-  | DIV Source Source REGISTER
-  | MOD Source Source REGISTER
-  | AND Source Source REGISTER
-  | OR Source Source REGISTER
-  | XOR Source Source REGISTER
-  | SHR Source Source REGISTER
-  | SHL Source Source REGISTER
+  ADD Source Source REGISTER {
+    $$ = new asmvm::OpAdd($2, $3, $4);
+  }
+  | SUB Source Source REGISTER {
+    $$ = new asmvm::OpSub($2, $3, $4);
+  }
+  | MUL Source Source REGISTER {
+    $$ = new asmvm::OpMul($2, $3, $4);
+  }
+  | DIV Source Source REGISTER {
+    $$ = new asmvm::OpDiv($2, $3, $4);
+  }
+  | MOD Source Source REGISTER {
+    $$ = new asmvm::OpMod($2, $3, $4);
+  }
+  | AND Source Source REGISTER {
+    $$ = new asmvm::OpAnd($2, $3, $4);
+  }
+  | OR Source Source REGISTER {
+    $$ = new asmvm::OpOr($2, $3, $4);
+  }
+  | XOR Source Source REGISTER {
+    $$ = new asmvm::OpXor($2, $3, $4);
+  }
+  | SHR Source Source REGISTER {
+    $$ = new asmvm::OpShr($2, $3, $4);
+  }
+  | SHL Source Source REGISTER {
+    $$ = new asmvm::OpShl($2, $3, $4);
+  }
   ;
 Load:
-  | LD1 REGISTER Address
-  | LD2 REGISTER Address
-  | LD3 REGISTER Address
-  | LD4 REGISTER Address
+  | LD1 REGISTER Address {
+    $$ = new asmvm::OpLd1($2, $3);
+  }
+  | LD2 REGISTER Address {
+    $$ = new asmvm::OpLd2($2, $3);
+  }
+  | LD4 REGISTER Address {
+    $$ = new asmvm::OpLd4($2, $3);
+  }
   ;
 Source:
-  REGISTER
-  | IntValue
+  REGISTER {
+    $$ = new asmvm::RegisterSource($1);
+  }
+  | IntValue {
+    $$ = new asmvm::IntegerValue($1);
+  }
   ;
 Address:
-  Base
-  | Base L_BRACKET Source R_BRACKET
+  Base {
+    $$ = new asmvm::Address($1, NULL);
+  }
+  | Base L_BRACKET Source R_BRACKET {
+    $$ = new asmvm::Address($1, $3);
+  }
   ;
 Base:
-  REGISTER
-  | L_HEX
+  REGISTER {
+    $$ = new asmvm::BaseAddressRegister($1);
+  }
+  | L_HEX {
+    $$ = new asmvm::BaseAddressHex($1);
+  }
   ;
 
 Store:

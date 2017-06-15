@@ -100,4 +100,65 @@ int32_t ConditionalJump::Exec(AsmMachine& vm) {
   return vm.reg_PC() + 1;  
 }
 
+int32_t OpMov::Exec(AsmMachine& vm) {
+  vm.set_register(rindex_dst_, src_->value(vm));
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpPush::Exec(AsmMachine& vm) {
+  if (!vm.push_value(src_->value(vm))) {
+    printf("Stack overflow. Default memory size = %d.", kDefaultMemorySize);
+    return -1;
+  }
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpPop::Exec(AsmMachine& vm) {
+  int32_t value = 0;
+  if (!vm.pop(&value)) {
+    printf("Invalid POP operation. Stack is empty.");
+    return -1;
+  }
+  if (store_value_) { 
+    vm.set_register(rindex_, value);
+  }
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpLd1::Exec(AsmMachine& vm) {
+  if (!vm.push_value(uint8_t(vm.get_register(rindex_)), address_->address(vm), 0)) {
+    printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
+  }
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpLd2::Exec(AsmMachine& vm) {
+  if (!vm.push_value(uint16_t(vm.get_register(rindex_)), address_->address(vm), 0)) {
+    printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
+  }
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpLd4::Exec(AsmMachine& vm) {
+  if (!vm.push_value(vm.get_register(rindex_), address_->address(vm), 0)) {
+    printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
+  }
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpExit::Exec(AsmMachine& vm) {
+  printf("Program exit with code %d.\n", code_->value(vm));
+  return -1;
+}
+
+int32_t OpInc::Exec(AsmMachine& vm) {
+  vm.set_register(rindex_, vm.get_register(rindex_) + 1);
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpDec::Exec(AsmMachine& vm) {
+  vm.set_register(rindex_, vm.get_register(rindex_) - 1);
+  return vm.reg_PC() + 1;
+}
+
 } // namespace asmvm

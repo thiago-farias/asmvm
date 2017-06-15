@@ -22,46 +22,8 @@ class Value {
 
 class Instruction {
  public:
-  enum OpCode {
-    kInstructionNop = 0,
-    kInstructionAdd,
-    kInstructionSub,
-    kInstructionMul,
-    kInstructionDiv,
-    kInstructionMod,
-    kInstructionAnd,
-    kInstructionOr,
-    kInstructionXor,
-    kInstructionShr,
-    kInstructionShl,
-    kInstructionNot,
-    kInstructionJmp,
-    kInstructionJz,
-    kInstructionJnz,
-    kInstructionLd,
-    kInstructionLd1,
-    kInstructionLd2,
-    kInstructionLd3,
-    kInstructionLd4,
-    kInstructionSt,
-    kInstructionSt1,
-    kInstructionSt2,
-    kInstructionSt3,
-    kInstructionSt4,
-    kInstructionInc,
-    kInstructionDec,
-    kInstructionCall,
-    kInstructionRet,
-    kInstructionPush,
-    kInstructionPop,
-    kInstructionPrint,
-    kInstructionExit
-  };
-  OpCode opcode() { return opcode_; }
   virtual ~Instruction() {}
   virtual int32_t Exec(AsmMachine& vm) = 0;
- protected:
-  OpCode opcode_;
 };
 
 static const uint32_t kDefaultMemorySize = 2048; // 2KB
@@ -108,6 +70,39 @@ class AsmMachine {
     uint32_t last_call = call_stack_.back();
     call_stack_.pop_back();
     return last_call;
+  }
+
+  bool push_reg(uint32_t rindex) {
+    if (reg_ST_ + sizeof(uint32_t) >= kDefaultMemorySize) return false;
+    
+    int32_t* mem = reinterpret_cast<int32_t*>(data_memory_ + reg_ST_);
+    *mem = register_set_[rindex];
+    reg_ST_ += sizeof(uint32_t);
+    return true;
+  }
+
+  // Usefull with int32_t, int16_t, int8_t and its unsigned counterparts.
+  template <typename inttype> bool push_value(inttype value, uint32_t base_address, int32_t offset) {
+    if (reg_ST_ + sizeof(inttype) >= kDefaultMemorySize) return false;
+    
+    inttype* mem = reinterpret_cast<inttype*>(data_memory_ + reg_ST_ + offset);
+    *mem = value;
+    reg_ST_ += sizeof(inttype);
+    return true;
+  }
+
+  template <typename inttype> bool push_value(inttype value) {
+    return push_value(value, reg_ST_, 0);
+  }
+
+  bool pop(int32_t* out) {
+    int32_t addr = reg_ST_ - sizeof(int32_t);
+    if (addr < 0) return false;
+    if (out != NULL) {
+      *out = reinterpret_cast<int32_t>(data_memory_ + addr);
+    }
+    reg_ST_ = addr;
+    return true;
   }
 
  private:

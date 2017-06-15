@@ -35,6 +35,7 @@ class Address {
   const BaseAddress* base() const { return base_; }
   Source* offset() { return offset_; }
   const Source* offset() const { return offset_; }
+  uint32_t address(AsmMachine& vm) const { return base_->base_address(vm) + ((offset_ == NULL)?0:offset_->value(vm)); }
  private:
   BaseAddress* base_;
   Source* offset_;
