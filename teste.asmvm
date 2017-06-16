@@ -1,0 +1,12 @@
+.DATA
+.CODE
+
+main: PRINT "teste\n"
+MV R1 [0]
+MV R2 [5]
+loop: PRINT "R2=" R2 "\n"
+SUB R2 1 R2
+SUB R2 R1 R3
+JNZ R3 loop
+PRINT "Fim!\n"
+EXIT 0

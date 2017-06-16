@@ -125,29 +125,29 @@ int32_t OpPop::Exec(AsmMachine& vm) {
   return vm.reg_PC() + 1;
 }
 
-int32_t OpLd1::Exec(AsmMachine& vm) {
-  if (!vm.push_value(uint8_t(vm.get_register(rindex_)), address_->address(vm), 0)) {
+int32_t OpSt1::Exec(AsmMachine& vm) {
+  if (!vm.push_value(uint8_t(src_->value(vm)), address_->address(vm), 0)) {
     printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
   }
   return vm.reg_PC() + 1;
 }
 
-int32_t OpLd2::Exec(AsmMachine& vm) {
-  if (!vm.push_value(uint16_t(vm.get_register(rindex_)), address_->address(vm), 0)) {
+int32_t OpSt2::Exec(AsmMachine& vm) {
+  if (!vm.push_value(uint16_t(src_->value(vm)), address_->address(vm), 0)) {
     printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
   }
   return vm.reg_PC() + 1;
 }
 
-int32_t OpLd4::Exec(AsmMachine& vm) {
-  if (!vm.push_value(vm.get_register(rindex_), address_->address(vm), 0)) {
+int32_t OpSt4::Exec(AsmMachine& vm) {
+  if (!vm.push_value(src_->value(vm), address_->address(vm), 0)) {
     printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
   }
   return vm.reg_PC() + 1;
 }
 
 int32_t OpExit::Exec(AsmMachine& vm) {
-  printf("Program exit with code %d.\n", code_->value(vm));
+  printf("\nProgram exit with code %d.\n", code_->value(vm));
   return -1;
 }
 
@@ -158,6 +158,40 @@ int32_t OpInc::Exec(AsmMachine& vm) {
 
 int32_t OpDec::Exec(AsmMachine& vm) {
   vm.set_register(rindex_, vm.get_register(rindex_) - 1);
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpPrint::Exec(AsmMachine& vm) {
+  for (auto i = printables_.begin(); i != printables_.end(); i++) {
+    printf("%s", (*i)->str(vm).c_str());
+  }
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpLd1::Exec(AsmMachine& vm) {
+  uint8_t value;
+  if (!vm.load_value(address_->address(vm), 0, &value)) {
+    printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
+  }
+  vm.set_register(rindex_, value);
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpLd2::Exec(AsmMachine& vm) {
+  uint16_t value;
+  if (!vm.load_value(address_->address(vm), 0, &value)) {
+    printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
+  }
+  vm.set_register(rindex_, value);
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpLd4::Exec(AsmMachine& vm) {
+  uint32_t value;
+  if (!vm.load_value(address_->address(vm), 0, &value)) {
+    printf("Invalid address [%d]. Default memory size = %d.\n", address_->address(vm), kDefaultMemorySize);
+  }
+  vm.set_register(rindex_, value);
   return vm.reg_PC() + 1;
 }
 

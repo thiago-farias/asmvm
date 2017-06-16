@@ -6,6 +6,7 @@
 #include "op.h"
 #include "asmvm.h"
 #include "params.h"
+#include "parser_aid.h"
 
 extern int yylex();
 
@@ -62,12 +63,11 @@ int yyerror(const char *msg)
 %token R_BRACKET
 %token COLON
 %token ASSIGN
-%token LF
 
 %type <rindex> REGISTER
 %type <int_value> L_INT
 %type <int_value> L_HEX
-%type <v_int_value> IntValue 
+%type <int_value> IntValue 
 %type <str> L_STRING
 %type <str> IDENTIFIER
 %type <value> Value
@@ -81,6 +81,8 @@ int yyerror(const char *msg)
 %type <instruction> Print
 %type <base> Base
 %type <address> Address
+%type <print_arg_list> PrintArgList
+%type <printable> PrintArg
 
 %union {
 	char *str;
@@ -89,11 +91,11 @@ int yyerror(const char *msg)
   asmvm::Value* value;
   asmvm::Instruction* instruction;
   asmvm::TernaryInstruction* ternary;
-  std::list<asmvm::Source*> *source_list;
   asmvm::BaseAddress* base;
   asmvm::Source* source;
   asmvm::Address* address;
-  asmvm::IntegerValue* v_int_value;
+  std::list<asmvm::Printable*> *print_arg_list;
+  asmvm::Printable* printable;
 }
 %%
 
@@ -102,10 +104,9 @@ File:
   ;
 
 DataSection: 
-  STATIC
+  | STATIC
   | STATIC Assignments
   ;
-  
 
 Assignments: 
   Assignment
@@ -113,11 +114,13 @@ Assignments:
   ;
 
 Assignment: 
-  IDENTIFIER ASSIGN Value LF
+  IDENTIFIER ASSIGN Value {
+    asmvm::parser::StaticHolder::instance().vm().add_symbol($1, $3);
+  }
   ;
 
-CodeSection: 
-  CODE Lines 
+CodeSection:
+  CODE Lines
   ;
 
 Lines: 
@@ -126,8 +129,12 @@ Lines:
   ;
 
 Line: 
-  Instruction LF
-  | IDENTIFIER COLON Instruction LF
+  Instruction {
+    asmvm::parser::StaticHolder::instance().vm().add_instruction($1);
+  }
+  | IDENTIFIER COLON Instruction {
+    asmvm::parser::StaticHolder::instance().vm().add_labeled_instruction($1, $3);
+  }
   ;
 
 Value: 
@@ -135,7 +142,7 @@ Value:
     $$ = new asmvm::StringValue($1);
   }
   | IntValue {
-    $$ = new asmvm::IntegerValue($1);
+    $$ = new asmvm::IntegerValue($1);;
   }
   ;
 
@@ -180,7 +187,7 @@ Instruction:
     $$ = $1;
   }
   | PUSH Source {
-    $$ = new OpPush($2);
+    $$ = new asmvm::OpPush($2);
   }
   | Pop {
     $$ = $1;
@@ -192,7 +199,7 @@ Instruction:
     $$ = $1;
   }
   | EXIT Source {
-    $$ = asmvm::OpExit($2);
+    $$ = new asmvm::OpExit($2);
   }
   | Print {
     $$ = $1;
@@ -203,7 +210,7 @@ Move:
     $$ = new asmvm::OpMov($2, new asmvm::RegisterSource($3));
   }
   | MV REGISTER L_BRACKET IntValue R_BRACKET {
-    $$ = new asmvm::OpMov($2, new asmvm::IntValue($4));
+    $$ = new asmvm::OpMov($2, new asmvm::IntegerValue($4));
   }
   ;
 Pop:
@@ -215,12 +222,27 @@ Pop:
   }
   ;
 Print:
-  PRINT L_STRING
-  | PRINT L_STRING SourceList
+  PRINT PrintArgList {
+    $$ = new asmvm::OpPrint(asmvm::parser::StaticHolder::instance().print_arg_list());
+    asmvm::parser::StaticHolder::instance().clear();
+  }
   ;
-SourceList:
-  Source
-  | Source SourceList
+PrintArgList:
+  PrintArg {
+    // Does not assign to $$. Recursive lists are not friends of unions. 
+    asmvm::parser::StaticHolder::instance().add($1);
+  }
+  | PrintArg { asmvm::parser::StaticHolder::instance().add($1); } PrintArgList {
+    // Does not assign to $$. Recursive lists are not friends of unions.     
+  }
+  ;
+PrintArg:
+  L_STRING {
+    $$ = new asmvm::StringValue($1);
+  }
+  | Source {
+    $$ = $1;
+  }
   ;
   
 TernaryInstructions:
@@ -256,7 +278,7 @@ TernaryInstructions:
   }
   ;
 Load:
-  | LD1 REGISTER Address {
+  LD1 REGISTER Address {
     $$ = new asmvm::OpLd1($2, $3);
   }
   | LD2 REGISTER Address {
@@ -289,12 +311,19 @@ Base:
   | L_HEX {
     $$ = new asmvm::BaseAddressHex($1);
   }
+  | IDENTIFIER {
+    // Not implemented yet
+  }
   ;
 
 Store:
-  ST Source Address
-  | ST1 Source Address
-  | ST2 Source Address
-  | ST3 Source Address
-  | ST4 Source Address
+  ST1 Source Address {
+    $$ = new asmvm::OpSt1($2, $3);
+  }
+  | ST2 Source Address {
+    $$ = new asmvm::OpSt2($2, $3);
+  }
+  | ST4 Source Address {
+    $$ = new asmvm::OpSt4($2, $3);
+  }
   ;

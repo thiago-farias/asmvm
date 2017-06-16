@@ -3,12 +3,27 @@
 
 #include "asmvm.h"
 
+#include <string>
+#include <sstream>
+
 namespace asmvm {
 
-class Source {
+class Printable {
+ public:
+  virtual ~Printable() {}
+  virtual std::string str(AsmMachine& vm) const = 0;
+};
+
+class Source : public Printable {
  public:
   virtual ~Source() {}
   virtual int32_t value(AsmMachine& vm) const = 0;
+  
+  std::string str(AsmMachine& vm) const {
+    std::stringstream ss; 
+    ss << value(vm);
+    return ss.str();
+  }
 };
 
 class BaseAddress {
@@ -41,7 +56,7 @@ class Address {
   Source* offset_;
 };
 
-class StringValue : public Value {
+class StringValue : public Value, public Printable {
  public:
   StringValue() {}
   explicit StringValue(const std::string& value) : value_(value) {}
@@ -52,6 +67,9 @@ class StringValue : public Value {
   }
   ValueType type() const { return kValueTypeString; }
   std::string value() const { return value_; }
+  std::string str(AsmMachine& vm) const {
+    return value_;
+  }
  private:
   std::string value_;
 };

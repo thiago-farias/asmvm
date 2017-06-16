@@ -11,6 +11,8 @@
 
 int lineNumber = 0;
 
+std::string literal_value;
+
 int hex2int(const char* hex) {   
     int x;
     std::stringstream ss;
@@ -23,6 +25,7 @@ int hex2int(const char* hex) {
 
 %option noyywrap nodefault
 %x COMENTARIO
+%x STRING
 
 %%
 ".DATA" { return STATIC; }
@@ -60,30 +63,31 @@ int hex2int(const char* hex) {
 "]" {return R_BRACKET;}
 "=" { return ASSIGN; }
 ":" {return COLON;}
-"\n" { return LF; }
-\"[^\"]*\" { yytext[strlen(yytext)-1] = '\0'; yylval.str = strdup(yytext+1); return L_STRING; }
 ST|PC|R[1-8] { 
     if (!strcmp(yytext, "ST")) {
         yylval.rindex = 9;
     } else if (!strcmp(yytext, "PC")) {
         yylval.rindex = 10;
     } else {
-        yylval.rindex = '0' + yytext[1]; 
-    }   
-    return REGISTER; 
+        yylval.rindex = '0' + yytext[1];
+    }
+    --yylval.rindex;
+    return REGISTER;
 }
 0|[+-]?[1-9][0-9]* { yylval.int_value = atoi(yytext); return L_INT; }
 0x[0-9A-F]+ { yylval.int_value = hex2int(yytext+2); return L_HEX; }
 [a-z_][a-z0-9_]* { yylval.str = strdup(yytext); return IDENTIFIER; }
-
-
+[\r\t ] {}
+"\n" { lineNumber++; }
+"\"" { BEGIN(STRING); literal_value = ""; }
+<STRING>"\"" { BEGIN(INITIAL); yylval.str = strdup(literal_value.c_str()); return L_STRING; }
+<STRING>\\t { literal_value += '\t'; }
+<STRING>\\r { literal_value += '\r'; }
+<STRING>\\n { literal_value += '\n'; lineNumber++; }
+<STRING>. { literal_value += yytext; }
 
 ";" {BEGIN(COMENTARIO);}
-
-<COMENTARIO>\n {BEGIN(INITIAL);}
-
+<COMENTARIO>\n {BEGIN(INITIAL); lineNumber++; }
 <COMENTARIO>. {}
-
 . {}
-
 %%

@@ -1,6 +1,8 @@
 #ifndef ASMVM_OP_H
 #define ASMVM_OP_H
 
+#include <list>
+
 #include "params.h"
 
 namespace asmvm {
@@ -213,6 +215,9 @@ class OpLd4 : public OpLoad {
 class OpExit : public Instruction {
  public:
   OpExit(Source* code) : code_(code) {}
+  ~OpExit() {
+    delete code_;
+  }
   int32_t Exec(AsmMachine& vm);
  private:
   Source* code_;
@@ -232,6 +237,44 @@ class OpDec : public Instruction {
   int32_t Exec(AsmMachine& vm);
  private:
   uint32_t rindex_;
+};
+
+class OpPrint : public Instruction {
+ public:
+  OpPrint(const std::list<Printable*>& printables) : printables_(printables) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  std::list<Printable*> printables_;
+};
+
+class OpStore : public Instruction {
+ public:
+  OpStore(Source* src, Address* address) : src_(src), address_(address) {}
+  virtual ~OpStore() {
+    delete src_;
+    delete address_;
+  }
+ protected:
+  Source* src_;
+  Address* address_;
+};
+
+class OpSt1 : public OpStore {
+ public:
+  OpSt1(Source* src, Address* address) : OpStore(src, address) {}
+  int32_t Exec(AsmMachine& vm);
+};
+
+class OpSt2 : public OpStore {
+ public:
+  OpSt2(Source* src, Address* address) : OpStore(src, address) {}
+  int32_t Exec(AsmMachine& vm);
+};
+
+class OpSt4 : public OpStore {
+ public:
+  OpSt4(Source* src, Address* address) : OpStore(src, address) {}
+  int32_t Exec(AsmMachine& vm);
 };
 
 } // namespace asmvm

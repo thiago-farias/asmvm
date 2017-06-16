@@ -26,7 +26,9 @@ class Instruction {
   virtual int32_t Exec(AsmMachine& vm) = 0;
 };
 
-static const uint32_t kDefaultMemorySize = 2048; // 2KB
+const uint32_t kDefaultMemorySize = 2048; // 2KB
+const uint32_t kRegisterIndexPc = 9;
+const uint32_t kRegisterIndexSt = 8;
 
 class AsmMachine {
  public:
@@ -53,8 +55,8 @@ class AsmMachine {
     register_set_[rindex] = value;
   }
   
-  uint32_t reg_PC() { return reg_PC_; }
-  uint32_t reg_ST() { return reg_ST_; }
+  uint32_t reg_PC() { return register_set_[kRegisterIndexPc]; }
+  uint32_t reg_ST() { return register_set_[kRegisterIndexPc]; }
   
   void Run();
   
@@ -63,7 +65,7 @@ class AsmMachine {
   bool GetSymbolValue(const std::string& symbol, Value** out_value);
 
   void call_push() {
-    call_stack_.push_back(reg_PC_);
+    call_stack_.push_back(reg_PC());
   }
 
   uint32_t call_pop() {
@@ -73,35 +75,43 @@ class AsmMachine {
   }
 
   bool push_reg(uint32_t rindex) {
-    if (reg_ST_ + sizeof(uint32_t) >= kDefaultMemorySize) return false;
+    if (reg_ST() + sizeof(uint32_t) >= kDefaultMemorySize) return false;
     
-    int32_t* mem = reinterpret_cast<int32_t*>(data_memory_ + reg_ST_);
+    int32_t* mem = reinterpret_cast<int32_t*>(data_memory_ + reg_ST());
     *mem = register_set_[rindex];
-    reg_ST_ += sizeof(uint32_t);
+    set_register(kRegisterIndexSt, reg_ST() + sizeof(uint32_t));
     return true;
   }
 
   // Usefull with int32_t, int16_t, int8_t and its unsigned counterparts.
   template <typename inttype> bool push_value(inttype value, uint32_t base_address, int32_t offset) {
-    if (reg_ST_ + sizeof(inttype) >= kDefaultMemorySize) return false;
+    if (reg_ST() + sizeof(inttype) >= kDefaultMemorySize) return false;
     
-    inttype* mem = reinterpret_cast<inttype*>(data_memory_ + reg_ST_ + offset);
+    inttype* mem = reinterpret_cast<inttype*>(data_memory_ + reg_ST() + offset);
     *mem = value;
-    reg_ST_ += sizeof(inttype);
+    set_register(kRegisterIndexSt, reg_ST() + sizeof(uint32_t));
     return true;
   }
 
   template <typename inttype> bool push_value(inttype value) {
-    return push_value(value, reg_ST_, 0);
+    return push_value(value, reg_ST(), 0);
+  }
+
+  template <typename inttype> bool load_value(uint32_t base_address, int32_t offset, inttype* out_value) {
+    int32_t addr = base_address + offset;
+    if (addr < 0) return false;
+    if (out_value == NULL) return false;
+    *out_value = *reinterpret_cast<inttype*>(data_memory_ + addr);
+    return true;
   }
 
   bool pop(int32_t* out) {
-    int32_t addr = reg_ST_ - sizeof(int32_t);
+    int32_t addr = reg_ST() - sizeof(int32_t);
     if (addr < 0) return false;
     if (out != NULL) {
-      *out = reinterpret_cast<int32_t>(data_memory_ + addr);
+      *out = *reinterpret_cast<int32_t*>(data_memory_ + addr);
     }
-    reg_ST_ = addr;
+    set_register(kRegisterIndexSt, addr);
     return true;
   }
 
@@ -110,10 +120,7 @@ class AsmMachine {
   SymbolTable symbol_table_;
   uint8_t data_memory_[kDefaultMemorySize];
   std::vector<Instruction*> program_;
-  int32_t register_set_[8];
-  // These special purpose registers are unsigned.
-  uint32_t reg_PC_;
-  uint32_t reg_ST_;
+  int32_t register_set_[10]; // 8 general purpose registers + 2 specific: ST and PC.
   std::vector<uint32_t> call_stack_;
 };
 
