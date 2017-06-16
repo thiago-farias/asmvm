@@ -3,7 +3,7 @@ all: asmvm
 asmvm: asmvm.o op.o asmvm_lex.o asmvm_parser.o main.o parser_aid.o
 	g++ -std=gnu++11 -g *.o -o asmvm
 
-main.o: parser_aid.h asmvm_parser.cpp
+main.o: parser_aid.h asmvm_parser.cpp main.cpp
 	g++ -std=gnu++11 -g -c main.cpp
 
 parser_aid.o: parser_aid.h

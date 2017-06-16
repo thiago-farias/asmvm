@@ -9,4 +9,4 @@ SUB R2 1 R2
 SUB R2 R1 R3
 JNZ R3 loop
 PRINT "Fim!\n"
-EXIT 0
+EXIT -1

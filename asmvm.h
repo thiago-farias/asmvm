@@ -58,7 +58,7 @@ class AsmMachine {
   uint32_t reg_PC() { return register_set_[kRegisterIndexPc]; }
   uint32_t reg_ST() { return register_set_[kRegisterIndexPc]; }
   
-  void Run();
+  int32_t Run();
   
   SymbolTable& symbol_table() { return symbol_table_; }
   const SymbolTable& symbol_table() const { return symbol_table_; }

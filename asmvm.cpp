@@ -29,7 +29,7 @@ void AsmMachine::reset_registers() {
   }
 }
 
-void AsmMachine::Run() {
+int32_t AsmMachine::Run() {
   reset_registers();
   Instruction *ins = program_[reg_PC()];
   int32_t temp_PC;
@@ -41,6 +41,7 @@ void AsmMachine::Run() {
     printf("A pilha de chamadas não está vazia. Cheque se há chamadas para a instrução RET" 
            " em todas as funções.\n");
   }
+  return -1 - temp_PC;
 }
 
 bool AsmMachine::GetSymbolValue(const std::string& symbol, Value** out_value) {

@@ -148,7 +148,8 @@ int32_t OpSt4::Exec(AsmMachine& vm) {
 
 int32_t OpExit::Exec(AsmMachine& vm) {
   printf("\nProgram exit with code %d.\n", code_->value(vm));
-  return -1;
+  if (code_->value(vm) < 0) return -1;
+  return -1 - code_->value(vm);
 }
 
 int32_t OpInc::Exec(AsmMachine& vm) {

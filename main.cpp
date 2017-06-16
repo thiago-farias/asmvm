@@ -20,8 +20,6 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Não foi possível compilar %s!\n", argv[1]);
 		return 1;
 	}
-
-   asmvm::parser::StaticHolder::instance().vm().Run();
-
-  return 0;
+  
+  return asmvm::parser::StaticHolder::instance().vm().Run();;
 }
