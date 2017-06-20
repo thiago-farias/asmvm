@@ -6,6 +6,15 @@ fim = 0x10
 .CODE
 
 main: PRINT "teste\n"
+MV R1 -10
+AND R1 0x80000000 R2
+JZ R2 positivo
+PRINT "R1=" R1 " é negativo.\n"
+JMP inicio_codigo
+positivo: PRINT "R1=" R1 " é positivo.\n"
+inicio_codigo: EXIT 0
+
+
 LD4 R1 fim
 LD4 R2 inicio
 loop: PRINT "R2=" R2 "\n"

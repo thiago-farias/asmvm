@@ -14,12 +14,12 @@ int lineNumber = 0;
 
 std::string literal_value;
 
-int hex2int(const char* hex) {   
-    int x;
+int32_t hex2int(const char* hex) {   
+    uint32_t x;
     std::stringstream ss;
     ss << std::hex << hex;
     ss >> x;
-    return x;
+    return (int32_t)x;
 }
 
 %}
