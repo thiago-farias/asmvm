@@ -53,6 +53,7 @@ void AsmMachine::reset_registers() {
   for(int i=0; i<10; ++i) {
     register_set_[i] = 0;
   }
+  register_set_[kRegisterIndexSt] = static_data_end_addr_;
 }
 
 int32_t AsmMachine::Run() {
