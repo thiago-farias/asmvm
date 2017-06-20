@@ -5,4 +5,4 @@
 *.o
 parser.*
 lexer.cpp
-asmvm.exe
+asmvm_out.exe
