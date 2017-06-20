@@ -1,8 +1,8 @@
 # asmvm
 Virtual machine assembly interpreter
 
-##Description:
+###Description
 This program is intended to interpret some particular instructions:
-*ADD
-*SUB
- 
+- [ADD] RA RB RR
+- [SUB] RA RB RR
+
