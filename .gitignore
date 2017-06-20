@@ -35,5 +35,5 @@
 .vscode
 
 # Arquivos intermediarios
-asmvm_parser.*
-asmvm_lex.cpp
+parser.*
+lexer.cpp

@@ -1,11 +1,15 @@
 #include "asmvm.h"
+
+#include <string.h>
+
 #include "params.h"
+
 
 extern int yyparse();
 
 namespace asmvm {
 
-AsmMachine::AsmMachine() {
+AsmMachine::AsmMachine() : static_data_end_addr_(0) {
   reset_registers();
 }
 
@@ -18,8 +22,30 @@ AsmMachine::~AsmMachine() {
   }
 }
 
+void AsmMachine::AddSymbol(const std::string& name, Value* value) {
+    if (value->kind() == Value::kValueKindVar) {
+      int32_t addr = -1;
+      if (value->type() == Value::kValueTypeInteger) {
+        int32_t* mem = reinterpret_cast<int32_t*>(data_memory_ + static_data_end_addr_);
+        IntegerValue* int_value = static_cast<IntegerValue*>(value);
+        *mem = int_value->value();
+        addr = static_data_end_addr_;
+        static_data_end_addr_ += sizeof(int32_t);
+      } else { // value->type() == Value::kValuTypeString
+        char* mem = reinterpret_cast<char*>(data_memory_ + static_data_end_addr_);
+        StringValue* str_value = static_cast<StringValue*>(value);
+        strcpy(mem, str_value->value().c_str());
+        addr = static_data_end_addr_; 
+        static_data_end_addr_ += str_value->value().length() + 1;
+      }
+      symbol_table_.insert(SymbolTable::value_type(name, new IntegerValue(Value::kValueKindVar, addr)));
+    } else {
+      symbol_table_.insert(SymbolTable::value_type(name, value));
+    }
+  }
+
 void AsmMachine::add_labeled_instruction(const std::string& label, Instruction* instruction) {
-  add_symbol(label, new IntegerValue(program_.size()));
+  AddSymbol(label, new IntegerValue(Value::kValueKindLabel, program_.size()));
   add_instruction(instruction);
 }
 
@@ -33,9 +59,12 @@ int32_t AsmMachine::Run() {
   reset_registers();
   Instruction *ins = program_[reg_PC()];
   int32_t temp_PC;
+  //log_regs();
   while ((temp_PC = ins->Exec(*this)) >= 0) {
     ins = program_[temp_PC];
     set_register(kRegisterIndexPc, temp_PC);
+    //log_regs();
+    //getchar();
   }
   if (!call_stack_.empty()) {
     printf("A pilha de chamadas não está vazia. Cheque se há chamadas para a instrução RET" 

@@ -115,7 +115,7 @@ Assignments:
 
 Assignment: 
   IDENTIFIER ASSIGN Value {
-    asmvm::parser::StaticHolder::instance().vm().add_symbol($1, $3);
+    asmvm::parser::StaticHolder::instance().vm().AddSymbol($1, $3);
   }
   ;
 
@@ -139,10 +139,10 @@ Line:
 
 Value: 
   L_STRING {
-    $$ = new asmvm::StringValue($1);
+    $$ = new asmvm::StringValue(asmvm::Value::kValueKindVar, $1);
   }
   | IntValue {
-    $$ = new asmvm::IntegerValue($1);;
+    $$ = new asmvm::IntegerValue(asmvm::Value::kValueKindVar, $1);
   }
   ;
 
@@ -206,11 +206,8 @@ Instruction:
   }
   ;
 Move:
-  MV REGISTER REGISTER {
-    $$ = new asmvm::OpMov($2, new asmvm::RegisterSource($3));
-  }
-  | MV REGISTER L_BRACKET IntValue R_BRACKET {
-    $$ = new asmvm::OpMov($2, new asmvm::IntegerValue($4));
+  MV REGISTER Source {
+    $$ = new asmvm::OpMov($2, $3);
   }
   ;
 Pop:
@@ -238,7 +235,7 @@ PrintArgList:
   ;
 PrintArg:
   L_STRING {
-    $$ = new asmvm::StringValue($1);
+    $$ = new asmvm::StringValue(asmvm::Value::kValueKindConst, $1);
   }
   | Source {
     $$ = $1;
@@ -293,7 +290,7 @@ Source:
     $$ = new asmvm::RegisterSource($1);
   }
   | IntValue {
-    $$ = new asmvm::IntegerValue($1);
+    $$ = new asmvm::IntegerValue(asmvm::Value::kValueKindConst, $1);
   }
   ;
 Address:
@@ -312,7 +309,7 @@ Base:
     $$ = new asmvm::BaseAddressHex($1);
   }
   | IDENTIFIER {
-    // Not implemented yet
+    $$ = new asmvm::BaseAddressVar($1);
   }
   ;
 

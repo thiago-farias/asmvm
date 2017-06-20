@@ -1,37 +1,37 @@
 all: asmvm
 
-asmvm: asmvm.o op.o asmvm_lex.o asmvm_parser.o main.o parser_aid.o
+asmvm: asmvm.o op.o lexer.o parser.o main.o parser_aid.o
 	g++ -std=gnu++11 -g *.o -o asmvm
 
-main.o: parser_aid.h asmvm_parser.cpp main.cpp
+main.o: parser_aid.h parser.cpp main.cpp asmvm.h
 	g++ -std=gnu++11 -g -c main.cpp
 
-parser_aid.o: parser_aid.h
+parser_aid.o: parser_aid.h asmvm.h
 	g++ -std=gnu++11 -g -c parser_aid.cpp
 
-asmvm_lex.o: asmvm_lex.cpp
-	g++ -std=gnu++11 -g -c asmvm_lex.cpp
+lexer.o: lexer.cpp asmvm.h
+	g++ -std=gnu++11 -g -c lexer.cpp
 	
-asmvm_parser.o: asmvm_parser.cpp parser_aid.h
-	g++ -std=gnu++11 -g -c asmvm_parser.cpp
+parser.o: parser.cpp parser_aid.h asmvm.h
+	g++ -std=gnu++11 -g -c parser.cpp
 	
-op.o: op.cpp params.h op.h
+op.o: op.cpp params.h op.h asmvm.h
 	g++ -std=gnu++11 -g -c op.cpp
 
 asmvm.o: asmvm.cpp asmvm.h
 	g++ -std=gnu++11 -g -c asmvm.cpp
 
-asmvm_lex.cpp: asmvm.l asmvm_parser.cpp
-	flex -oasmvm_lex.cpp asmvm.l
+lexer.cpp: asmvm.l parser.cpp
+	flex -olexer.cpp asmvm.l
 
-asmvm_parser.cpp: asmvm.y
-	bison -v -d -o asmvm_parser.cpp asmvm.y
+parser.cpp: asmvm.y
+	bison -v -d -o parser.cpp asmvm.y
 	
 
 clean: 
 	rm -f *.o
-	rm -f asmvm_lex.cpp
-	rm -f asmvm_parser.*
+	rm -f lexer.cpp
+	rm -f parser.*
 	rm -f asmvm
 
 install: asmvm

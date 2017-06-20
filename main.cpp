@@ -2,7 +2,7 @@
 
 #include "parser_aid.h"
 #include "op.h"
-#include "asmvm_parser.hpp"
+#include "parser.hpp"
 
 int main(int argc, char **argv) {
 	extern FILE *yyin;

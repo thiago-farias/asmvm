@@ -16,8 +16,18 @@ class Value {
     kValueTypeString,
     kValueTypeInteger
   };
+  enum ValueKind {
+    kValueKindVar,
+    kValueKindLabel,
+    kValueKindConst
+  };
+  explicit Value(ValueKind kind) : kind_(kind) {}
   virtual ~Value() {}
   virtual ValueType type() const = 0;
+  ValueKind kind() const { return kind_; }
+ private:
+  ValueKind kind_;
+
 };
 
 class Instruction {
@@ -37,9 +47,7 @@ class AsmMachine {
   AsmMachine();
   ~AsmMachine();
     
-  void add_symbol(const std::string& name, Value* value) {
-    symbol_table_.insert(SymbolTable::value_type(name, value));
-  }
+  void AddSymbol(const std::string& name, Value* value);
   
   void add_instruction(Instruction* instruction) {
     program_.push_back(instruction);
@@ -55,8 +63,8 @@ class AsmMachine {
     register_set_[rindex] = value;
   }
   
-  uint32_t reg_PC() { return register_set_[kRegisterIndexPc]; }
-  uint32_t reg_ST() { return register_set_[kRegisterIndexPc]; }
+  uint32_t reg_PC() const { return register_set_[kRegisterIndexPc]; }
+  uint32_t reg_ST() const { return register_set_[kRegisterIndexSt]; }
   
   int32_t Run();
   
@@ -87,9 +95,9 @@ class AsmMachine {
   template <typename inttype> bool push_value(inttype value, uint32_t base_address, int32_t offset) {
     if (reg_ST() + sizeof(inttype) >= kDefaultMemorySize) return false;
     
-    inttype* mem = reinterpret_cast<inttype*>(data_memory_ + reg_ST() + offset);
+    inttype* mem = reinterpret_cast<inttype*>(data_memory_ + base_address + offset);
     *mem = value;
-    set_register(kRegisterIndexSt, reg_ST() + sizeof(uint32_t));
+    set_register(kRegisterIndexSt, reg_ST() + sizeof(inttype));
     return true;
   }
 
@@ -117,10 +125,22 @@ class AsmMachine {
 
  private:
   inline void reset_registers();
+  void log_regs() {
+    for (int i=0; i<10; ++i) {
+      if (i == kRegisterIndexPc) {
+        printf("PC=%d\n", register_set_[i]);
+      } else if (i == kRegisterIndexSt) {
+        printf("ST=%d\n", register_set_[i]);
+      } else {
+        printf("R%d=%d\n", i+1, register_set_[i]);
+      }
+    }
+  }
   SymbolTable symbol_table_;
   uint8_t data_memory_[kDefaultMemorySize];
   std::vector<Instruction*> program_;
   int32_t register_set_[10]; // 8 general purpose registers + 2 specific: ST and PC.
+  uint32_t static_data_end_addr_;
   std::vector<uint32_t> call_stack_;
 };
 

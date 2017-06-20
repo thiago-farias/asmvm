@@ -1,12 +1,37 @@
 .DATA
+
+inicio = 0x1A
+fim = 0x10
+
 .CODE
 
 main: PRINT "teste\n"
-MV R1 [0]
-MV R2 [5]
+LD4 R1 fim
+LD4 R2 inicio
 loop: PRINT "R2=" R2 "\n"
-SUB R2 1 R2
+ST4 R1 fim
+ST4 R2 inicio
+PUSH R2
+CALL teste
+POP R4
+PRINT "R4=" R4 "\n"
+LD4 R2 inicio
+LD4 R1 fim
+DEC R2
 SUB R2 R1 R3
 JNZ R3 loop
 PRINT "Fim!\n"
-EXIT -1
+EXIT 0
+
+
+
+teste: POP R1
+PRINT "R1=" R1 "\n"
+MV R2 1
+loop2: PRINT R2 " "
+INC R2
+SUB R1 R2 R3
+JNZ R3 loop2
+PRINT "\n"
+PUSH R2
+RET

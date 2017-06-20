@@ -58,9 +58,9 @@ class Address {
 
 class StringValue : public Value, public Printable {
  public:
-  StringValue() {}
-  explicit StringValue(const std::string& value) : value_(value) {}
-  StringValue(const StringValue& sv) : value_(sv.value_) {}
+  StringValue(ValueKind kind) : Value(kind) {}
+  explicit StringValue(ValueKind kind, const std::string& value) : Value(kind), value_(value) {}
+  StringValue(const StringValue& sv) : Value(sv.kind()), value_(sv.value_) {}
   StringValue& operator = (const StringValue& sv) {
     value_ = sv.value_;
     return *this;
@@ -76,9 +76,9 @@ class StringValue : public Value, public Printable {
 
 class IntegerValue : public Value, public Source {
  public:
-  IntegerValue() : value_(0) {}
-  explicit IntegerValue(int32_t value) : value_(value) {}
-  IntegerValue(const IntegerValue& sv) : value_(sv.value_) {}
+  IntegerValue(ValueKind kind) : Value(kind), value_(0) {}
+  explicit IntegerValue(ValueKind kind, int32_t value) : Value(kind), value_(value) {}
+  IntegerValue(const IntegerValue& sv) : Value(sv.kind()), value_(sv.value_) {}
   IntegerValue& operator = (const IntegerValue& sv) {
     value_ = sv.value_;
     return *this;
@@ -112,6 +112,19 @@ class BaseAddressHex : public BaseAddress {
   uint32_t base_address(AsmMachine& vm) const { return hex_; }
  private:
   uint32_t hex_;
+};
+
+class BaseAddressVar : public BaseAddress {
+ public:
+  explicit BaseAddressVar(const std::string& symbol) : symbol_(symbol) {}
+  uint32_t base_address(AsmMachine& vm) const { 
+    Value* v;
+    vm.GetSymbolValue(symbol_, &v);
+    IntegerValue* int_value = static_cast<IntegerValue*>(v);
+    return int_value->value();
+  }
+ private:
+  std::string symbol_;
 };
 
 } // namespace asmvm
