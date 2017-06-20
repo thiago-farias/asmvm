@@ -1,25 +1,27 @@
 all: asmvm
 
+CPPFLAGS=-std=gnu++11
+
 asmvm: asmvm.o op.o lexer.o parser.o main.o parser_aid.o
-	g++ -std=gnu++11 -g *.o -o asmvm
+	g++ $(CPPFLAGS) *.o -o asmvm
 
 main.o: parser_aid.h parser.cpp main.cpp asmvm.h
-	g++ -std=gnu++11 -g -c main.cpp
+	g++ $(CPPFLAGS) -c main.cpp
 
 parser_aid.o: parser_aid.h asmvm.h
-	g++ -std=gnu++11 -g -c parser_aid.cpp
+	g++ $(CPPFLAGS) -c parser_aid.cpp
 
 lexer.o: lexer.cpp asmvm.h
-	g++ -std=gnu++11 -g -c lexer.cpp
+	g++ $(CPPFLAGS) -c lexer.cpp
 	
 parser.o: parser.cpp parser_aid.h asmvm.h
-	g++ -std=gnu++11 -g -c parser.cpp
+	g++ $(CPPFLAGS) -c parser.cpp
 	
 op.o: op.cpp params.h op.h asmvm.h
-	g++ -std=gnu++11 -g -c op.cpp
+	g++ $(CPPFLAGS) -c op.cpp
 
 asmvm.o: asmvm.cpp asmvm.h
-	g++ -std=gnu++11 -g -c asmvm.cpp
+	g++ $(CPPFLAGS) -c asmvm.cpp
 
 lexer.cpp: asmvm.l parser.cpp
 	flex -olexer.cpp asmvm.l
