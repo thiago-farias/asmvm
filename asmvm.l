@@ -54,20 +54,19 @@ int32_t hex2int(const char* hex) {
 "MV" { return MV; }
 "LD1" { return LD1; }
 "LD2" { return LD2; }
-"LD3" { return LD3; }
 "LD4" { return LD4; }
 "ST1" { return ST1; }
 "ST2" { return ST2; }
-"ST3" { return ST3; }
 "ST4" { return ST4; }
 "PRINT" { return PRINT; }
 "EXIT" { return EXIT; }
-"[" {return L_BRACKET;}
-"]" {return R_BRACKET;}
+"SYSCALL" { return SYSCALL; }
+"[" { return L_BRACKET; }
+"]" { return R_BRACKET; }
 "=" { return ASSIGN; }
-":" {return COLON;}
-";" {BEGIN(COMENTARIO);}
-<COMENTARIO>\n {BEGIN(INITIAL); lineNumber++; }
+":" { return COLON; }
+";" { BEGIN(COMENTARIO); }
+<COMENTARIO>\n { BEGIN(INITIAL); lineNumber++; }
 <COMENTARIO>. {}
 
 ST|PC|R[1-8] { 

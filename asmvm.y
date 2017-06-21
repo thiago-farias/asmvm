@@ -36,22 +36,19 @@ int yyerror(const char *msg)
 %token MV
 %token LD1
 %token LD2
-%token LD3
 %token LD4
 %token ST1
 %token ST2
-%token ST3
 %token ST4
 %token INC
 %token DEC
 %token CALL
 %token RET
-%token ST
-%token PC
 %token PUSH
 %token POP
 %token PRINT
 %token EXIT
+%token SYSCALL
 %token REGISTER
 %token L_INT
 %token L_HEX
@@ -189,6 +186,12 @@ Instruction:
   | PUSH Source {
     $$ = new asmvm::OpPush($2);
   }
+  | PUSH IDENTIFIER {
+    asmvm::Value* v = NULL;
+    asmvm::parser::StaticHolder::instance().vm().GetSymbolValue($2, &v);
+    asmvm::IntegerValue* iv = static_cast<asmvm::IntegerValue*>(v);
+    $$ = new asmvm::OpPush(new asmvm::IntegerValue(*iv));
+  }
   | Pop {
     $$ = $1;
   }
@@ -203,6 +206,9 @@ Instruction:
   }
   | Print {
     $$ = $1;
+  }
+  | SYSCALL Source REGISTER {
+    $$ = new asmvm::OpSysCall($2, $3);
   }
   ;
 Move:
