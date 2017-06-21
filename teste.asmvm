@@ -2,39 +2,10 @@
 
 inicio = 0x1A
 fim = 0x10
-filename = "teste_syscall.txt"
-str_teste = "teste do arquivo\n"
 
 .CODE
 
 main: PRINT "teste\n"
-PUSH 6                      ; Open mode Write and Create
-PUSH filename               ; Nome do arquivo
-SYSCALL 0 R2                ; FOPEN
-
-JZ R2 open_ok
-PRINT "Erro ao abrir arquivo.\n"
-EXIT 1
-
-open_ok: POP R1             ; FOPEN retorna o Handler do arquivo.
-PUSH 2                      ; Obrigatório. No FPRINT, para delimitar o fim dos parâmetros deve-se colocar primeiro o código 2
-PUSH 10                     ; Parâmetro do tipo inteiro
-PUSH 1                      ; Tipo do parâmetro anterior (inteiro = 1)
-PUSH str_teste              ; Parâmetro do tipo string
-PUSH 0                      ; Tipo do parâmetro anterior (String = 0)
-PUSH R1                     ; Handler do arquivo
-SYSCALL 2 R2                ; FPRINT
-
-JZ R2 write_ok
-PRINT "Erro ao escrever no arquivo.\n"
-EXIT 1
-
-write_ok: PUSH R1           ; Handler do arquivo.
-SYSCALL 1 R2                ; FCLOSE
-
-PRINT "Fim\n";
-EXIT 0
-
 LD4 R1 fim
 LD4 R2 inicio
 loop: PRINT "R2=" R2 "\n"
