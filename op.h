@@ -277,6 +277,15 @@ class OpSt4 : public OpStore {
   int32_t Exec(AsmMachine& vm);
 };
 
+class OpSysCall : public Instruction {
+ public:
+  OpSysCall(Source* src, uint32_t rindex) : src_(src), rindex_(rindex) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  Source* src_;
+  uint32_t rindex_;
+};
+
 } // namespace asmvm
 
 #endif

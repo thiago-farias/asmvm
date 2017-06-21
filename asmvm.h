@@ -47,6 +47,7 @@ class AsmMachine {
   AsmMachine();
   ~AsmMachine();
     
+  const uint8_t* data() const { return data_memory_; }
   void AddSymbol(const std::string& name, Value* value);
   
   void add_instruction(Instruction* instruction) {

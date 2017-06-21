@@ -186,6 +186,12 @@ Instruction:
   | PUSH Source {
     $$ = new asmvm::OpPush($2);
   }
+  | PUSH IDENTIFIER {
+    asmvm::Value* v = NULL;
+    asmvm::parser::StaticHolder::instance().vm().GetSymbolValue($2, &v);
+    asmvm::IntegerValue* iv = static_cast<asmvm::IntegerValue*>(v);
+    $$ = new asmvm::OpPush(new asmvm::IntegerValue(*iv));
+  }
   | Pop {
     $$ = $1;
   }
@@ -202,7 +208,7 @@ Instruction:
     $$ = $1;
   }
   | SYSCALL Source REGISTER {
-    // Not implemented yet.
+    $$ = new asmvm::OpSysCall($2, $3);
   }
   ;
 Move:
