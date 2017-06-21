@@ -237,7 +237,7 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
   const char* filename = NULL;
   switch (function_code) {
   case kSysCallFopen:
-    printf("[kSysCallFopen]\n");
+    //printf("[kSysCallFopen]\n");
     vm.pop(&pointer);
     vm.pop(&mode);
     filename = (const char*)vm.data() + pointer;
@@ -285,13 +285,13 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
         case kTypeString:
           vm.pop(&pointer);
           str = (const char*)vm.data() + pointer;
-          printf("[kSysCallFprint] str = [%s]\n", str);
+          //printf("[kSysCallFprint] str = [%s]\n", str);
           fprintf(handler, "%s", str);
           break;
         case kTypeInt:
           vm.pop(&value);
           fprintf(handler, "%d", value);
-          printf("[kSysCallFprint] int = [%d]\n", value);
+          //printf("[kSysCallFprint] int = [%d]\n", value);
           break;
         }
       } while (type != kTypeNoMoreParams);
