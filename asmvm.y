@@ -49,11 +49,14 @@ int yyerror(const char *msg)
 %token PRINT
 %token EXIT
 %token SYSCALL
+%token PUSHN
+%token POPN
 %token REGISTER
 %token L_INT
 %token L_HEX
 %token L_STRING
 %token IDENTIFIER
+%token LABEL
 %token STATIC
 %token CODE
 %token L_BRACKET
@@ -80,6 +83,7 @@ int yyerror(const char *msg)
 %type <address> Address
 %type <print_arg_list> PrintArgList
 %type <printable> PrintArg
+%type <str> LABEL
 
 %union {
 	char *str;
@@ -129,8 +133,8 @@ Line:
   Instruction {
     asmvm::parser::StaticHolder::instance().vm().add_instruction($1);
   }
-  | IDENTIFIER COLON Instruction {
-    asmvm::parser::StaticHolder::instance().vm().add_labeled_instruction($1, $3);
+  | LABEL Instruction {
+    asmvm::parser::StaticHolder::instance().vm().add_labeled_instruction($1, $2);
   }
   ;
 
@@ -210,6 +214,12 @@ Instruction:
   | SYSCALL Source REGISTER {
     $$ = new asmvm::OpSysCall($2, $3);
   }
+  | PUSHN Source {
+    $$ = new asmvm::OpPushN($2->value(asmvm::parser::StaticHolder::instance().vm()));
+  }
+  | POPN Source {
+    $$ = new asmvm::OpPopN($2->value(asmvm::parser::StaticHolder::instance().vm()));
+  }
   ;
 Move:
   MV REGISTER Source {
@@ -245,6 +255,12 @@ PrintArg:
   }
   | Source {
     $$ = $1;
+  }
+  | IDENTIFIER {
+    asmvm::Value* v = NULL;
+    asmvm::parser::StaticHolder::instance().vm().GetSymbolValue($1, &v);
+    asmvm::IntegerValue* iv = static_cast<asmvm::IntegerValue*>(v);
+    $$ = new asmvm::StringValue(asmvm::Value::kValueKindConst, iv->value());
   }
   ;
   

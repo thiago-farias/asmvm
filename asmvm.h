@@ -124,6 +124,26 @@ class AsmMachine {
     return true;
   }
 
+  uint32_t fopen(const char* filename, const char* mode) {
+    FILE* f = ::fopen(filename, mode);
+    if (!f) return 0;
+    open_files_.push_back(f);
+    return open_files_.size();
+  }
+
+  void fclose(uint32_t handler) {
+    ::fclose(open_files_[handler-1]);
+    open_files_[handler-1] = NULL;
+  }
+
+  FILE* file(uint32_t handler) {
+    if (handler > open_files_.size()) {
+      return NULL;
+    } else {
+      return open_files_[handler-1];
+    }
+  }
+
  private:
   inline void reset_registers();
   void log_regs() {
@@ -143,6 +163,7 @@ class AsmMachine {
   int32_t register_set_[10]; // 8 general purpose registers + 2 specific: ST and PC.
   uint32_t static_data_end_addr_;
   std::vector<uint32_t> call_stack_;
+  std::vector<FILE*> open_files_;
 };
 
 } // namespace asmvm

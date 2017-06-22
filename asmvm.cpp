@@ -20,6 +20,11 @@ AsmMachine::~AsmMachine() {
   for (int i=0; i < program_.size(); ++i) {
     delete program_[i];
   }
+  for (int i=0; i< open_files_.size(); ++i) {
+    if (open_files_[i] != NULL) {
+      ::fclose(open_files_[i]);
+    }
+  }
 }
 
 void AsmMachine::AddSymbol(const std::string& name, Value* value) {

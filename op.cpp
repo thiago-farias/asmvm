@@ -233,7 +233,7 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
   int32_t pointer;
   int32_t mode;
   int32_t nparams;
-  FILE* handler = NULL;
+  int32_t handler = 0;
   const char* filename = NULL;
   switch (function_code) {
   case kSysCallFopen:
@@ -242,63 +242,69 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
     vm.pop(&mode);
     filename = (const char*)vm.data() + pointer;
     if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate | kOpenModeBinary)) != 0) {
-      handler = fopen(filename, "wb+");
+      handler = vm.fopen(filename, "wb+");
     } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate)) != 0) {
-      handler = fopen(filename, "w+");
+      handler = vm.fopen(filename, "w+");
     } else if ((mode & (kOpenModeRead | kOpenModeWrite)) != 0) {
-      handler = fopen(filename, "r+");
+      handler = vm.fopen(filename, "r+");
     } else if ((mode & (kOpenModeRead)) != 0) {
-      handler = fopen(filename, "r");
+      handler = vm.fopen(filename, "r");
     } else if ((mode & (kOpenModeWrite | kOpenModeCreate)) != 0) {
-      handler = fopen(filename, "w");
+      handler = vm.fopen(filename, "w");
     } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeBinary)) != 0) {
-      handler = fopen(filename, "rb+");
+      handler = vm.fopen(filename, "rb+");
     } else if ((mode & (kOpenModeRead | kOpenModeBinary)) != 0) {
-      handler = fopen(filename, "rb");
+      handler = vm.fopen(filename, "rb");
     } else if ((mode & (kOpenModeWrite | kOpenModeBinary)) != 0) {
-      handler = fopen(filename, "wb");
+      handler = vm.fopen(filename, "wb");
     } else if ((mode & (kOpenModeAppend | kOpenModeBinary)) != 0) {
-      handler = fopen(filename, "ab");
+      handler = vm.fopen(filename, "ab");
     } else if ((mode & (kOpenModeAppend)) != 0) {
-      handler = fopen(filename, "a");
+      handler = vm.fopen(filename, "a");
     } else if ((mode & (kOpenModeAppend | kOpenModeRead | kOpenModeBinary)) != 0) {
-      handler = fopen(filename, "ab+");
+      handler = vm.fopen(filename, "ab+");
     } else if ((mode & (kOpenModeAppend | kOpenModeRead )) != 0) {
-      handler = fopen(filename, "a+");
+      handler = vm.fopen(filename, "a+");
     }
-    vm.push_value((int32_t)handler);
+    vm.push_value(handler);
     break;
   case kSysCallFclose:
-    vm.pop(&pointer);
-    handler = reinterpret_cast<FILE*>(pointer);
-    fclose(handler);
+    vm.pop(&handler);
+    vm.fclose(handler);
     break;
   case kSysCallFprint: {
       int type = -1;
-      vm.pop(&pointer);
-      handler = reinterpret_cast<FILE*>(pointer);
-      do {
-        const char* str = NULL;
-        int32_t value;
-        vm.pop(&type);
-        switch (type) {
-        case kTypeString:
-          vm.pop(&pointer);
-          str = (const char*)vm.data() + pointer;
-          //printf("[kSysCallFprint] str = [%s]\n", str);
-          fprintf(handler, "%s", str);
-          break;
-        case kTypeInt:
-          vm.pop(&value);
-          fprintf(handler, "%d", value);
-          //printf("[kSysCallFprint] int = [%d]\n", value);
-          break;
-        }
-      } while (type != kTypeNoMoreParams);
+      vm.pop(&handler);
+      const char* str = NULL;
+      int32_t value;
+      vm.pop(&type);
+      switch (type) {
+      case kTypeString:
+        vm.pop(&pointer);
+        str = (const char*)vm.data() + pointer;
+        //printf("[kSysCallFprint] str = [%s]\n", str);
+        fprintf(vm.file(handler), "%s", str);
+        break;
+      case kTypeInt:
+        vm.pop(&value);
+        fprintf(vm.file(handler), "%d", value);
+        //printf("[kSysCallFprint] int = [%d]\n", value);
+        break;
+      }
     }
     break;
   }
   vm.set_register(rindex_, 0);
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpPushN::Exec(AsmMachine& vm) {
+  vm.set_register(kRegisterIndexSt, vm.reg_ST() + bytes_);
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpPopN::Exec(AsmMachine& vm) {
+  vm.set_register(kRegisterIndexSt, vm.reg_ST() - bytes_);
   return vm.reg_PC() + 1;
 }
 

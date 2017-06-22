@@ -58,20 +58,28 @@ class Address {
 
 class StringValue : public Value, public Printable {
  public:
-  StringValue(ValueKind kind) : Value(kind) {}
-  explicit StringValue(ValueKind kind, const std::string& value) : Value(kind), value_(value) {}
-  StringValue(const StringValue& sv) : Value(sv.kind()), value_(sv.value_) {}
+  explicit StringValue(ValueKind kind) : Value(kind) {}
+  StringValue(ValueKind kind, const std::string& value) : Value(kind), value_(value), local_(true) {}
+  StringValue(ValueKind kind, uint32_t address) : Value(kind), address_(address), local_(false) {}
+  StringValue(const StringValue& sv) : Value(sv.kind()), value_(sv.value_), address_(sv.address_), local_(sv.local_) {}
   StringValue& operator = (const StringValue& sv) {
     value_ = sv.value_;
+    address_ = sv.address_;
+    local_ = sv.local_;
     return *this;
   }
   ValueType type() const { return kValueTypeString; }
   std::string value() const { return value_; }
   std::string str(AsmMachine& vm) const {
-    return value_;
+    if (local_)
+      return value_;
+    else
+      return std::string((const char*)vm.data() + address_);
   }
  private:
   std::string value_;
+  bool local_;
+  uint32_t address_;
 };
 
 class IntegerValue : public Value, public Source {

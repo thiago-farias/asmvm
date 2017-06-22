@@ -286,6 +286,22 @@ class OpSysCall : public Instruction {
   uint32_t rindex_;
 };
 
+class OpPushN : public Instruction {
+ public:
+  OpPushN(uint32_t bytes) : bytes_(bytes) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t bytes_; 
+};
+
+class OpPopN : public Instruction {
+ public:
+  OpPopN(uint32_t bytes) : bytes_(bytes) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t bytes_; 
+};
+
 } // namespace asmvm
 
 #endif

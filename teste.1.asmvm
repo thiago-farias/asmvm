@@ -6,6 +6,7 @@ str_teste = "teste do arquivo\n"
 .CODE
 
 main: PRINT "teste\n"
+PRINT str_teste             ; PRINT agora funciona com enderecos de string
 PUSH 6                      ; Open mode Write and Create
 PUSH filename               ; Nome do arquivo
 SYSCALL 0 R2                ; FOPEN
@@ -15,11 +16,13 @@ PRINT "Erro ao abrir arquivo.\n"
 EXIT 1
 
 open_ok: POP R1             ; FOPEN retorna o Handler do arquivo.
-PUSH 2                      ; Obrigatório. No FPRINT, para delimitar o fim dos parâmetros deve-se colocar primeiro o código 2
-PUSH 10                     ; Parâmetro do tipo inteiro
-PUSH 1                      ; Tipo do parâmetro anterior (inteiro = 1)
 PUSH str_teste              ; Parâmetro do tipo string
 PUSH 0                      ; Tipo do parâmetro anterior (String = 0)
+PUSH R1                     ; Handler do arquivo
+SYSCALL 2 R2                ; FPRINT
+
+PUSH 10                     ; Parâmetro do tipo inteiro
+PUSH 1                      ; Tipo do parâmetro anterior (inteiro = 1)
 PUSH R1                     ; Handler do arquivo
 SYSCALL 2 R2                ; FPRINT
 

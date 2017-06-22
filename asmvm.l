@@ -61,6 +61,8 @@ int32_t hex2int(const char* hex) {
 "PRINT" { return PRINT; }
 "EXIT" { return EXIT; }
 "SYSCALL" { return SYSCALL; }
+"PUSHN" { return PUSHN; } 
+"POPN" { return POPN; }
 "[" { return L_BRACKET; }
 "]" { return R_BRACKET; }
 "=" { return ASSIGN; }
@@ -83,6 +85,7 @@ ST|PC|R[1-8] {
 0|[+-]?[1-9][0-9]* { yylval.int_value = atoi(yytext); return L_INT; }
 0x[0-9A-F]+ { yylval.int_value = hex2int(yytext+2); return L_HEX; }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.str = strdup(yytext); return IDENTIFIER; }
+[a-zA-Z_][a-zA-Z0-9_]*: { yytext[strlen(yytext)-1] = '\0'; yylval.str = strdup(yytext); return LABEL; }
 [\r\t ] {}
 \n { lineNumber++; }
 "\"" { BEGIN(STRING); literal_value = ""; }
