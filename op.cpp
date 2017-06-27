@@ -326,7 +326,7 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
     }
     break;
   case kSysCallReadInt: {
-      uint32_t value = 0;
+      int32_t value = 0;
       vm.pop(&handler);
       int res = fscanf(vm.file(handler), "%d", &value);
       if (res != 1) {

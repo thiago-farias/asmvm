@@ -39,6 +39,26 @@ MV R5 5                     ; 101 em binário
 SHL R5 21 R5                ; 1010 0000 0000 0000 0000 0000 ou 0xA00000
 ; MV R5 0xA00000
 
+MV R2 ST ; Guarda o endereço do próximo elemento da pilha. R2 serve agora como endereço da string de 32 posições alocada abaixo.
+PUSHN 32 ; Coloca 32 bytes na pilha
+PUSH R2  ; Parâmetro do endereço da string a ser preenchida.
+PUSH 32  ; Tamanho máximo de caracteres na string.
+PUSH R3  ; Handler do arquivo que contém a string a ser lida.
+SYSCALL 3 R8 ; Ler string do arquivo
+
+; Agora a string lida em R2 será escrita no outro arquivo.
+PUSH R2                     ; Parâmetro do tipo string
+PUSH 0                      ; Tipo do parâmetro anterior (String = 0)
+PUSH R1                     ; Handler do arquivo
+SYSCALL 2 R2                ; FPRINT
+
+POPN 32 ; Remove a memória da string da pilha já que não será mais usada.
+
+PUSH R3
+SYSCALL 4 R2
+POP R7
+PRINT "Lido do arquivo R7 = " R7 "\n"
+
 PUSH R3
 PUSH R1
 
