@@ -1,7 +1,9 @@
 .DATA
 
 filename = "teste_syscall.txt"
+filename2 = "teste_syscall2.txt"
 str_teste = "teste do arquivo\n"
+str_enter = "\n"
 
 .CODE
 
@@ -11,11 +13,47 @@ PUSH 6                      ; Open mode Write and Create
 PUSH filename               ; Nome do arquivo
 SYSCALL 0 R2                ; FOPEN
 
-JZ R2 open_ok
+JZ R2 open1_ok
 PRINT "Erro ao abrir arquivo.\n"
 EXIT 1
 
-open_ok: POP R1             ; FOPEN retorna o Handler do arquivo.
+open1_ok: POP R1             ; FOPEN retorna o Handler do arquivo.
+PUSH 1                      ; Open mode Read
+PUSH filename2              ; Nome do arquivo
+SYSCALL 0 R2                ; FOPEN
+
+JZ R2 open2_ok
+PRINT "Erro ao abrir arquivo.\n"
+EXIT 1
+
+open2_ok: POP R3             ; FOPEN retorna o Handler do arquivo.
+PUSH R3
+SYSCALL 5 R2
+PRINT "Resultado SYSCALL 5 = " R2 "\n"
+POP R4
+
+PRINT "Lido do arquivo R4 = "
+FPRINT R4
+PRINT "\n"
+MV R5 5                     ; 101 em binário
+SHL R5 21 R5                ; 1010 0000 0000 0000 0000 0000 ou 0xA00000
+; MV R5 0xA00000
+
+PUSH R3
+PUSH R1
+
+PUSH R5
+PUSH 0
+PUSH 0
+CALL make_ieee_float
+POP R5
+PRINT "Criado a partir da função R5 = "
+FPRINT R5
+PRINT "\n"
+
+POP R1
+POP R3
+
 PUSH str_teste              ; Parâmetro do tipo string
 PUSH 0                      ; Tipo do parâmetro anterior (String = 0)
 PUSH R1                     ; Handler do arquivo
@@ -26,13 +64,41 @@ PUSH 1                      ; Tipo do parâmetro anterior (inteiro = 1)
 PUSH R1                     ; Handler do arquivo
 SYSCALL 2 R2                ; FPRINT
 
+PUSH str_enter              ; Parâmetro do tipo string
+PUSH 0                      ; Tipo do parâmetro anterior (String = 0)
+PUSH R1                     ; Handler do arquivo
+SYSCALL 2 R2                ; FPRINT
+
+PUSH R4                     ; Parâmetro do tipo ponto flutuante
+PUSH 2                      ; Tipo do parâmetro anterior (ponto flutuante = 2)
+PUSH R1                     ; Handler do arquivo
+SYSCALL 2 R2                ; FPRINT
+
+PUSH str_enter              ; Parâmetro do tipo string
+PUSH 0                      ; Tipo do parâmetro anterior (String = 0)
+PUSH R1                     ; Handler do arquivo
+SYSCALL 2 R2                ; FPRINT
+
 JZ R2 write_ok
 PRINT "Erro ao escrever no arquivo.\n"
 EXIT 1
 
 write_ok: PUSH R1           ; Handler do arquivo.
 SYSCALL 1 R2                ; FCLOSE
+PUSH R3                     ; Handler do arquivo.
+SYSCALL 1 R2                ; FCLOSE
 
 PRINT "Fim\n";
 EXIT 0
 
+make_ieee_float: POP R3     ; Mantissa
+POP R2                    ; Expoente
+POP R1                    ; Sinal
+SHL R3 31 R3
+ADD R2 127 R2
+SHL R2 23 R2
+OR R3 R2 R3
+AND R1 0x7FFFFF R1
+OR R3 R1 R3
+PUSH R3
+RET

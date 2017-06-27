@@ -51,6 +51,7 @@ int yyerror(const char *msg)
 %token SYSCALL
 %token PUSHN
 %token POPN
+%token FPRINT
 %token REGISTER
 %token L_INT
 %token L_HEX
@@ -210,6 +211,9 @@ Instruction:
   }
   | Print {
     $$ = $1;
+  }
+  | FPRINT REGISTER {
+    $$ = new asmvm::OpFprint($2);
   }
   | SYSCALL Source REGISTER {
     $$ = new asmvm::OpSysCall($2, $3);

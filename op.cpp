@@ -198,8 +198,11 @@ int32_t OpLd4::Exec(AsmMachine& vm) {
 
 enum SysCallCode {
   kSysCallFopen = 0,
-  kSysCallFclose,
-  kSysCallFprint,
+  kSysCallFclose = 1,
+  kSysCallFprint = 2,
+  kSysCallReadString = 3,
+  kSysCallReadInt = 4,
+  kSysCallReadFloat = 5,
   kSysCallFread,
   kSysCallFwrite,
   kSysCallFseek,
@@ -224,7 +227,13 @@ enum OpenMode {
 enum ParamType {
   kTypeString = 0,
   kTypeInt,
+  kTypeFloat,
   kTypeNoMoreParams
+};
+
+union float_wrapper {
+    int32_t i;
+    float f;
 };
 
 
@@ -234,6 +243,7 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
   int32_t mode;
   int32_t nparams;
   int32_t handler = 0;
+  int32_t ret = 0;
   const char* filename = NULL;
   switch (function_code) {
   case kSysCallFopen:
@@ -241,14 +251,14 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
     vm.pop(&pointer);
     vm.pop(&mode);
     filename = (const char*)vm.data() + pointer;
-    if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate | kOpenModeBinary)) != 0) {
+    if ((mode & (kOpenModeRead)) != 0) {
+      handler = vm.fopen(filename, "r");
+    } else if ((mode & (kOpenModeRead | kOpenModeWrite)) != 0) {
+      handler = vm.fopen(filename, "r+");
+    } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate | kOpenModeBinary)) != 0) {
       handler = vm.fopen(filename, "wb+");
     } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate)) != 0) {
       handler = vm.fopen(filename, "w+");
-    } else if ((mode & (kOpenModeRead | kOpenModeWrite)) != 0) {
-      handler = vm.fopen(filename, "r+");
-    } else if ((mode & (kOpenModeRead)) != 0) {
-      handler = vm.fopen(filename, "r");
     } else if ((mode & (kOpenModeWrite | kOpenModeCreate)) != 0) {
       handler = vm.fopen(filename, "w");
     } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeBinary)) != 0) {
@@ -266,6 +276,7 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
     } else if ((mode & (kOpenModeAppend | kOpenModeRead )) != 0) {
       handler = vm.fopen(filename, "a+");
     }
+    if (handler == 0) ret = 1;
     vm.push_value(handler);
     break;
   case kSysCallFclose:
@@ -290,11 +301,52 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
         fprintf(vm.file(handler), "%d", value);
         //printf("[kSysCallFprint] int = [%d]\n", value);
         break;
+      case kTypeFloat: {
+          float_wrapper u;
+          vm.pop(&value);
+          u.i = value;
+          fprintf(vm.file(handler), "%f", u.f);
+        }
+        break;
+      }
+    }
+    fflush(vm.file(handler));
+    break;
+  case kSysCallReadString: {
+      char* str = NULL;
+      int32_t size = 0;
+      vm.pop(&handler);
+      vm.pop(&size); // Size of the string
+      vm.pop(&pointer); // Address of the string
+      str = (char*)vm.data() + pointer;
+      char* res = fgets(str, size, vm.file(handler));
+      if (res == NULL) {
+        ret = 1;
       }
     }
     break;
+  case kSysCallReadInt: {
+      uint32_t value = 0;
+      vm.pop(&handler);
+      int res = fscanf(vm.file(handler), "%d", &value);
+      if (res != 1) {
+        ret = 1;
+      }
+      vm.push_value(value);
+    }
+    break;
+  case kSysCallReadFloat: {
+      float value = 0.0F;
+      vm.pop(&handler);
+      int res = fscanf(vm.file(handler), "%f", &value);
+      if (res != 1) {
+        ret = 1;
+      }
+      vm.push_value(value);
+    }
+    break;
   }
-  vm.set_register(rindex_, 0);
+  vm.set_register(rindex_, ret);
   return vm.reg_PC() + 1;
 }
 
@@ -305,6 +357,13 @@ int32_t OpPushN::Exec(AsmMachine& vm) {
 
 int32_t OpPopN::Exec(AsmMachine& vm) {
   vm.set_register(kRegisterIndexSt, vm.reg_ST() - bytes_);
+  return vm.reg_PC() + 1;
+}
+
+int32_t OpFprint::Exec(AsmMachine& vm) {
+  float_wrapper u;
+  u.i = vm.get_register(rindex_);
+  printf("%f", u.f);
   return vm.reg_PC() + 1;
 }
 

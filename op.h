@@ -302,6 +302,14 @@ class OpPopN : public Instruction {
   uint32_t bytes_; 
 };
 
+class OpFprint : public Instruction {
+ public:
+  OpFprint(uint32_t rindex) : rindex_(rindex) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t rindex_;
+};
+
 } // namespace asmvm
 
 #endif

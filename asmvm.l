@@ -63,6 +63,7 @@ int32_t hex2int(const char* hex) {
 "SYSCALL" { return SYSCALL; }
 "PUSHN" { return PUSHN; } 
 "POPN" { return POPN; }
+"FPRINT" { return FPRINT; }
 "[" { return L_BRACKET; }
 "]" { return R_BRACKET; }
 "=" { return ASSIGN; }
