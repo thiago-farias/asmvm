@@ -251,29 +251,29 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
     vm.pop(&pointer);
     vm.pop(&mode);
     filename = (const char*)vm.data() + pointer;
-    if ((mode & (kOpenModeRead)) != kOpenModeRead) {
+    if ((mode & (kOpenModeRead)) == kOpenModeRead) {
       handler = vm.fopen(filename, "r");
-    } else if ((mode & (kOpenModeRead | kOpenModeWrite)) != (kOpenModeRead | kOpenModeWrite)) {
+    } else if ((mode & (kOpenModeRead | kOpenModeWrite)) == (kOpenModeRead | kOpenModeWrite)) {
       handler = vm.fopen(filename, "r+");
-    } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate | kOpenModeBinary)) != (kOpenModeRead | kOpenModeWrite | kOpenModeCreate | kOpenModeBinary)) {
+    } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate | kOpenModeBinary)) == (kOpenModeRead | kOpenModeWrite | kOpenModeCreate | kOpenModeBinary)) {
       handler = vm.fopen(filename, "wb+");
-    } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate)) != (kOpenModeRead | kOpenModeWrite | kOpenModeCreate)) {
+    } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeCreate)) == (kOpenModeRead | kOpenModeWrite | kOpenModeCreate)) {
       handler = vm.fopen(filename, "w+");
-    } else if ((mode & (kOpenModeWrite | kOpenModeCreate)) != (kOpenModeWrite | kOpenModeCreate)) {
+    } else if ((mode & (kOpenModeWrite | kOpenModeCreate)) == (kOpenModeWrite | kOpenModeCreate)) {
       handler = vm.fopen(filename, "w");
-    } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeBinary)) != (kOpenModeRead | kOpenModeWrite | kOpenModeBinary)) {
+    } else if ((mode & (kOpenModeRead | kOpenModeWrite | kOpenModeBinary)) == (kOpenModeRead | kOpenModeWrite | kOpenModeBinary)) {
       handler = vm.fopen(filename, "rb+");
-    } else if ((mode & (kOpenModeRead | kOpenModeBinary)) != (kOpenModeRead | kOpenModeBinary)) {
+    } else if ((mode & (kOpenModeRead | kOpenModeBinary)) == (kOpenModeRead | kOpenModeBinary)) {
       handler = vm.fopen(filename, "rb");
-    } else if ((mode & (kOpenModeWrite | kOpenModeBinary)) != (kOpenModeWrite | kOpenModeBinary)) {
+    } else if ((mode & (kOpenModeWrite | kOpenModeBinary)) == (kOpenModeWrite | kOpenModeBinary)) {
       handler = vm.fopen(filename, "wb");
-    } else if ((mode & (kOpenModeAppend | kOpenModeBinary)) != (kOpenModeAppend | kOpenModeBinary)) {
+    } else if ((mode & (kOpenModeAppend | kOpenModeBinary)) == (kOpenModeAppend | kOpenModeBinary)) {
       handler = vm.fopen(filename, "ab");
-    } else if ((mode & (kOpenModeAppend)) != kOpenModeAppend) {
+    } else if ((mode & (kOpenModeAppend)) == kOpenModeAppend) {
       handler = vm.fopen(filename, "a");
-    } else if ((mode & (kOpenModeAppend | kOpenModeRead | kOpenModeBinary)) != (kOpenModeAppend | kOpenModeRead | kOpenModeBinary)) {
+    } else if ((mode & (kOpenModeAppend | kOpenModeRead | kOpenModeBinary)) == (kOpenModeAppend | kOpenModeRead | kOpenModeBinary)) {
       handler = vm.fopen(filename, "ab+");
-    } else if ((mode & (kOpenModeAppend | kOpenModeRead )) != (kOpenModeAppend | kOpenModeRead )) {
+    } else if ((mode & (kOpenModeAppend | kOpenModeRead )) == (kOpenModeAppend | kOpenModeRead )) {
       handler = vm.fopen(filename, "a+");
     }
     if (handler == 0) ret = 1;
