@@ -10,7 +10,10 @@ SYSCALL 6 R2                  ; Timer.
 DEC R1                        ; Decrementa o contador.
 JNZ R1 loop                   ; Repete até o contador chegar a 0.
 
-boom: MV R1 0                 ; offset do endereço para pegar a primeira letra do bum.
+; Vamos agora imprimir a string bum letra por letra aguardando um tempo variável 
+; entre as letras para dar um efeito de onomatopéia de explosão.
+
+MV R1 0                       ; offset do endereço para pegar a primeira letra do bum.
 MV R2 ST                      ; Guarda o endereço na pilha para uma string de uma letra só. O segundo byte guarda sempre o número zero, que indica que a string acabou.
 PUSHN 2                       ; Cria o espaço de 2 bytes na pilha (um byte para a letra e outro para o terminador da string, ou seja, um byte com valor fixo 0).
 proxima_letra: LD1 R3 bum[R1] ; Pega somente o byte da string bum na posição R1 e coloca em R3.
