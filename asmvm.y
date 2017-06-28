@@ -52,6 +52,7 @@ int yyerror(const char *msg)
 %token PUSHN
 %token POPN
 %token FPRINT
+%token SPRINT
 %token REGISTER
 %token L_INT
 %token L_HEX
@@ -214,6 +215,17 @@ Instruction:
   }
   | FPRINT REGISTER {
     $$ = new asmvm::OpFprint($2);
+  }
+  | SPRINT REGISTER {
+    $$ = new asmvm::OpSprint($2);
+  }
+  | SPRINT IDENTIFIER {
+    asmvm::Value* v = NULL;
+    asmvm::AsmMachine& vm = asmvm::parser::StaticHolder::instance().vm();
+    vm.GetSymbolValue($2, &v);
+    asmvm::IntegerValue* iv = static_cast<asmvm::IntegerValue*>(v);
+    const char* str = reinterpret_cast<const char*>(vm.data() + iv->value(vm));
+    $$ = new asmvm::OpSprint(str);
   }
   | SYSCALL Source REGISTER {
     $$ = new asmvm::OpSysCall($2, $3);

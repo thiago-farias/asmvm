@@ -310,6 +310,18 @@ class OpFprint : public Instruction {
   uint32_t rindex_;
 };
 
+class OpSprint : public Instruction {
+ public:
+  OpSprint(uint32_t rindex) : rindex_(rindex), reg_(true), str_(NULL) {}
+  OpSprint(const char* str) : rindex_(0), reg_(false), str_(str) {}
+  int32_t Exec(AsmMachine& vm);
+ private:
+  uint32_t rindex_;
+  bool reg_;
+  const char* str_;
+};
+
+
 } // namespace asmvm
 
 #endif

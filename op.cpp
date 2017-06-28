@@ -1,4 +1,6 @@
 #include "op.h"
+#include <thread>
+#include <chrono>
 
 namespace asmvm {
 
@@ -166,6 +168,7 @@ int32_t OpPrint::Exec(AsmMachine& vm) {
   for (auto i = printables_.begin(); i != printables_.end(); i++) {
     printf("%s", (*i)->str(vm).c_str());
   }
+  fflush(stdout);
   return vm.reg_PC() + 1;
 }
 
@@ -203,11 +206,11 @@ enum SysCallCode {
   kSysCallReadString = 3,
   kSysCallReadInt = 4,
   kSysCallReadFloat = 5,
+  kSysCallSleep,
   kSysCallFread,
   kSysCallFwrite,
   kSysCallFseek,
   kSysCallNow,
-  kSysCallSleep,
   kSysCallSocket,
   kSysCallTCPConnect,
   kSysCallSend,
@@ -345,6 +348,12 @@ int32_t OpSysCall::Exec(AsmMachine& vm) {
       vm.push_value(value);
     }
     break;
+  case kSysCallSleep: {
+      int32_t ms = 0;   
+      vm.pop(&ms);
+      std::this_thread::sleep_for(std::chrono::milliseconds((uint32_t)ms));
+    }
+    break;
   }
   vm.set_register(rindex_, ret);
   return vm.reg_PC() + 1;
@@ -364,7 +373,19 @@ int32_t OpFprint::Exec(AsmMachine& vm) {
   float_wrapper u;
   u.i = vm.get_register(rindex_);
   printf("%f", u.f);
+  fflush(stdout);
   return vm.reg_PC() + 1;
 }
+
+int32_t OpSprint::Exec(AsmMachine& vm) {
+  if (reg_) {
+    int32_t pointer = vm.get_register(rindex_);
+    str_ = reinterpret_cast<const char*>(vm.data() + pointer);
+  }
+  printf("%s", str_);
+  fflush(stdout);
+  return vm.reg_PC() + 1;
+}
+
 
 } // namespace asmvm
